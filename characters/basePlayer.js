@@ -5,7 +5,7 @@ class BasePlayer extends EngineObject {
         this.jumpPower = 0.4;
         this.moveSpeed = 0.2;
         this.setCollision(true);
-        this.maxHealth = 50;
+        this.maxHealth = 100;
         this.health = this.maxHealth;
         this.fallDamageThreshold = 0.4;
         this.wasGrounded = true;
@@ -19,6 +19,8 @@ class BasePlayer extends EngineObject {
         this.attackDamage = 20;
         this.attackRange = 1.5;
         this.facingDirection = 1;
+        this.lastDamageTime = 0; 
+        this.damageCooldown = 2000
     }
 
     addCoin() {
@@ -77,10 +79,21 @@ class BasePlayer extends EngineObject {
     }
 
     takeDamage(amount) {
-        this.health = Math.max(0, this.health - amount);
-        if (this.health <= 0) {
-            this.health = this.maxHealth;
-            loadLevel(currentLevel);
+        const currentTime = Date.now();  // Get current time in milliseconds
+
+        // Check if the cooldown has passed
+        if (currentTime - this.lastDamageTime >= this.damageCooldown) {
+            // Apply damage
+            this.health = Math.max(0, this.health - amount);
+
+            // If health is 0 or below, reload the level (or handle death logic)
+            if (this.health <= 0) {
+                this.health = this.maxHealth;  // Reset health to max
+                loadLevel(currentLevel);  // Reload the level (or death handling)
+            }
+
+            // Update the last damage time
+            this.lastDamageTime = currentTime;
         }
     }
 

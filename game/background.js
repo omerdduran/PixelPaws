@@ -1,54 +1,47 @@
-// BU KISIM HİÇ Bİ BOKA YARAMIYOR
-// TODO: make it work
-
 class ParallaxBackground {
-    constructor() {
+    constructor(canvas, camera) {
+        this.canvas = canvas;
+        this.camera = camera;
+        this.ctx = canvas.getContext('2d');
+        
         this.layers = [
-            {
-                image: new Image(),
-                speed: 0.1,  // En uzak katman en yavaş hareket eder
-                y: 0
-            },
-            {
-                image: new Image(),
-                speed: 0.3,  // Orta katman
-                y: 0
-            },
-            {
-                image: new Image(),
-                speed: 0.5,  // En yakın katman en hızlı hareket eder
-                y: 0
-            }
+            { speed: 0.1, y: 0 },
+            { speed: 0.3, y: 0 },
+            { speed: 0.5, y: 0 }
         ];
 
-        // Bi boka yaramıyo
-        this.layers[0].image.src = '../../assets/backgrounds/bg_layer1.png';
-        this.layers[1].image.src = '../../assets/backgrounds/bg_layer2.png';
-        this.layers[2].image.src = '../../assets/backgrounds/bg_layer3.png';
+        this.layers.forEach((layer, index) => {
+            layer.image = new Image();
+            layer.image.src = `../assets/backgrounds/bg_layer${index + 1}.png`;
+            layer.image.onerror = () => console.error(`Failed to load background layer ${index + 1}`);
+        });
     }
 
     render() {
-        // Her katmanı çiz
         this.layers.forEach(layer => {
-            if (!layer.image.complete) return; // Resim yüklenene kadar bekle
+            if (!layer.image.complete) return;
 
-            // Paralaks efekti için kamera pozisyonuna göre offset hesapla
-            const parallaxX = -cameraPos.x * layer.speed;
+            const parallaxX = -this.camera.x * layer.speed;
             
-            // Ekran genişliğine göre kaç kere tekrar edeceğini hesapla
-            const width = mainCanvas.width / cameraScale;
-            const height = mainCanvas.height / cameraScale;
+            // Scale to cover both width and height
+            const scaleX = this.canvas.width / layer.image.width;
+            const scaleY = this.canvas.height / layer.image.height;
+            const scale = Math.max(scaleX, scaleY);
             
-            // Katmanı tekrarlayarak çiz
-            const repeatCount = Math.ceil(width) + 1;
+            const scaledWidth = layer.image.width * scale;
+            const scaledHeight = layer.image.height * scale;
+            
+            const repeatCount = Math.ceil(this.canvas.width / scaledWidth) + 2;
             
             for (let i = 0; i < repeatCount; i++) {
-                const x = (i * width + parallaxX) % width;
+                const x = ((i * scaledWidth + parallaxX) % scaledWidth) - scaledWidth;
                 
-                drawRect(
-                    vec2(x + cameraPos.x, cameraPos.y), 
-                    vec2(width, height),
-                    new Color(0.1, 0.1, 0.2)
+                this.ctx.drawImage(
+                    layer.image,
+                    x,
+                    0,
+                    scaledWidth,
+                    scaledHeight
                 );
             }
         });

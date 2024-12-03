@@ -1,6 +1,6 @@
 'use strict';
 
-let gameScale = 15;
+let gameScale = 25;
 let worldSize = vec2(32, 32);
 
 let currentLevel = 0;
@@ -77,7 +77,10 @@ function loadLevel(levelIndex) {
 function gameInit() {
     cameraScale = gameScale;
     gravity = -0.02;
-    background = new ParallaxBackground();
+    background = new ParallaxBackground(mainCanvas, {
+        get x() { return cameraPos.x },
+        get y() { return cameraPos.y }
+    });
     loadLevel(0);
 }
 
@@ -102,7 +105,7 @@ function gameRender() {
         drawRect(
             vec2(p.pos.x + p.size.x/2, p.pos.y + p.size.y/2),
             p.size,
-            new Color(.5, .3, .2)
+            p.color || new Color(.5, .3, .2)  // fallback color if none specified
         );
     });
 
