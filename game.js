@@ -29,9 +29,17 @@ let gameUI;
 let levelManager;
 let transition;
 
+// Sprite sheets konfigürasyonunu kaldır
+const spriteSheets = []; // Boş array bırakalım, çünkü engineInit bir array bekliyor
+
 function gameInit() {
     cameraScale = gameScale;
     gravity = -0.02;
+    
+    // Piksel-perfect rendering için canvas ayarları
+    mainContext.imageSmoothingEnabled = false;
+    overlayContext.imageSmoothingEnabled = false;
+    
     background = new ParallaxBackground(mainCanvas, {
         get x() { return cameraPos.x },
         get y() { return cameraPos.y }

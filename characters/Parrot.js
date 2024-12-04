@@ -1,41 +1,30 @@
 class Parrot extends BasePlayer {
     constructor(pos) {
-        super(pos, new Color(1, 0.2, 0.2), {
-            maxHealth: 70,       // Lowest health
-            moveSpeed: 0.25,
-            gravityScale: 0.7    // Floaty
-        });
-        this.flyEnergy = 100;
+        super(pos, new Color(1, 0.5, 0), {
+            maxHealth: 70,
+            moveSpeed: 0.35,
+            jumpPower: 0.5,
+            attackDamage: 10,
+            gravityScale: 0.7
+        }, 'parrot', vec2(1.1, 1.1));
+
+        // Load additional character-specific sprite
+        this.loadAdditionalSprite('fly');
+        this.isFlying = false;
     }
 
-    handleMovement() {
-        super.handleMovement();
-        
-        // Hold Q to fly
-        if (keyIsDown('KeyQ') && this.flyEnergy > 0) {
-            this.velocity.y = Math.max(this.velocity.y, 0.2);
-            this.flyEnergy--;
-        }
+    useSpecialAbility() {
+        this.isFlying = true;
+        this.velocity.y = this.jumpPower * 0.5;
+        this.currentState = 'fly';
+        this.frameIndex = 0;
+        this.specialAbilityCooldown = 2;
     }
 
     update() {
         super.update();
         if (this.groundObject) {
-            this.flyEnergy = Math.min(this.flyEnergy + 2, 100);
+            this.isFlying = false;
         }
-    }
-
-    render() {
-        super.render();
-        // Draw fly energy bar
-        const energyBarWidth = 1;
-        const energyBarHeight = 0.1;
-        const energyBarOffset = vec2(0, 0.9);
-        const energyPercent = this.flyEnergy / 100;
-        drawRect(
-            this.pos.add(energyBarOffset),
-            vec2(energyBarWidth * energyPercent, energyBarHeight),
-            new Color(0, 0, 1, 0.5)
-        );
     }
 } 

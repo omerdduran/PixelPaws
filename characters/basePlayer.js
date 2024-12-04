@@ -1,6 +1,6 @@
 class BasePlayer extends EngineObject {
-    constructor(pos, color, stats = {}) {
-        super(pos, vec2(1, 1), undefined, 0, color);
+    constructor(pos, color, stats = {}, characterType = '', size = vec2(1.5, 1.5)) {
+        super(pos, size, undefined, 0, color);
         
         // Base stats that can be overridden
         this.gravityScale = stats.gravityScale ?? 1;
@@ -30,6 +30,152 @@ class BasePlayer extends EngineObject {
         this.specialAbilityCooldown = 0;
         this.specialAbilityDuration = 0;
         this.isUsingSpecialAbility = false;
+
+        // Animation properties
+        this.characterType = characterType.toLowerCase();
+        this.sprites = {};
+        this.loadedSprites = 0;
+        this.currentState = 'idle';
+        this.frameIndex = 0;
+        this.animationTimer = 0;
+        this.animationSpeed = 0.15;
+        this.lastState = 'idle';
+        this.framesPerState = {
+            'idle': 8,
+            'run': 5,
+            'attack': 7,
+            'jump': 11,
+            'hurt': 3,
+            'die': 12
+        };
+
+        // Load sprites if character type is provided
+        if (this.characterType) {
+            this.loadSprites();
+        }
+    }
+
+    loadSprites() {
+        // Define base sprite states that all characters share
+        const baseStates = ['idle', 'run', 'attack', 'jump', 'hurt', 'die'];
+        
+        // Load each sprite
+        baseStates.forEach(state => {
+            const img = new Image();
+            img.onload = () => {
+                this.loadedSprites++;
+                console.log(`Loaded ${state} sprite for ${this.characterType}`);
+            };
+            img.onerror = () => {
+                console.error(`Failed to load ${state} sprite for ${this.characterType} at path: sprites/${this.characterType}/${state}.png`);
+            };
+            img.src = `sprites/${this.characterType}/${state}.png`;
+            this.sprites[state] = img;
+        });
+    }
+
+    // Add a method to load additional character-specific sprites
+    loadAdditionalSprite(stateName) {
+        const img = new Image();
+        img.onload = () => {
+            console.log(`Loaded ${stateName} sprite for ${this.characterType}`);
+        };
+        img.onerror = () => {
+            console.error(`Failed to load ${stateName} sprite for ${this.characterType}`);
+        };
+        img.src = `sprites/${this.characterType}/${stateName}.png`;
+        this.sprites[stateName] = img;
+    }
+
+    render() {
+        // Determine current state
+        let newState = 'idle';
+        
+        if (this.isAttacking) {
+            newState = 'attack';
+        } else if (Math.abs(this.velocity.x) > 0.01) {
+            newState = 'run';
+        } else if (!this.groundObject) {
+            newState = 'jump';
+        }
+
+        // If taking damage, briefly show hurt sprite
+        if (this.lastDamageTime > Date.now() - 200) {
+            newState = 'hurt';
+        }
+
+        // State change handling with smooth transitions
+        if (newState !== this.currentState) {
+            // Sadece bazı durumlarda anında değiştir
+            const instantTransitions = ['hurt', 'attack'];
+            if (instantTransitions.includes(newState) || 
+                instantTransitions.includes(this.currentState)) {
+                this.frameIndex = 0;
+                this.animationTimer = 0;
+            } else {
+                // Diğer durumlarda mevcut frame'i tamamla
+                if (this.animationTimer < 0.5) {
+                    newState = this.currentState;
+                }
+            }
+            this.currentState = newState;
+        }
+
+        // Update animation with precise timing
+        this.updateAnimation();
+
+        // Draw the current sprite
+        const sprite = this.sprites[this.currentState];
+        if (sprite && sprite.complete && sprite.naturalWidth !== 0) {
+            // Her durum için frame sayısını al
+            const frameCount = this.framesPerState[this.currentState] || 4;
+            const frameWidth = sprite.width / frameCount;
+            const frameHeight = sprite.height;
+            
+            // Dünya koordinatlarını ekran koordinatlarına çevir ve tam sayıya yuvarla
+            const screenPos = worldToScreen(this.pos);
+            const scale = cameraScale * 2;
+            
+            overlayContext.save();
+            overlayContext.imageSmoothingEnabled = false;
+            
+            // Sprite'ın merkez noktasını hesapla
+            const centerX = Math.round(screenPos.x);
+            const centerY = Math.round(screenPos.y);
+            
+            // Sprite'ın boyutlarını hesapla
+            const drawWidth = Math.round(scale);
+            const drawHeight = Math.round(scale);
+            
+            // Sprite'ın çizim pozisyonunu hesapla
+            const drawX = centerX - drawWidth / 2;
+            const drawY = centerY - drawHeight / 2;
+            
+            // Frame indeksini tam sayıya yuvarla
+            const frameX = Math.floor(this.frameIndex) * frameWidth;
+            
+            overlayContext.translate(centerX, centerY);
+            
+            if (this.velocity.x < 0) {
+                overlayContext.scale(-1, 1);
+            }
+            
+            try {
+                overlayContext.drawImage(
+                    sprite,
+                    frameX, 0,                    // Source X, Y
+                    frameWidth, frameHeight,      // Source Width, Height
+                    -drawWidth/2, -drawHeight/2,  // Destination X, Y
+                    drawWidth, drawHeight         // Destination Width, Height
+                );
+            } catch (error) {
+                console.error('Error drawing sprite:', error);
+            }
+            
+            overlayContext.restore();
+        } else {
+            drawRect(this.pos, vec2(1), this.color);
+        }
     }
 
     addCoin() {
@@ -37,17 +183,9 @@ class BasePlayer extends EngineObject {
         console.log('Coins collected:', this.coins);
     }
 
-    render() {
-        super.render();
-        if (this.isAttacking) {
-            const attackPos = this.pos.add(vec2(this.facingDirection * this.attackRange / 2, 0));
-            const attackSize = vec2(this.attackRange, 1);
-            drawRect(attackPos, attackSize, new Color(1, 0, 0, 0.5));
-        }
-    }
-
     update() {
         super.update();
+        
         if (this.isActive) {
             this.handleMovement();
             this.handleAttack();
@@ -153,5 +291,15 @@ class BasePlayer extends EngineObject {
     }
 
     useSpecialAbility() {
+    }
+
+    // Update animation frame with precise timing
+    updateAnimation() {
+        this.animationTimer += this.animationSpeed;
+        if (this.animationTimer >= 1) {
+            this.animationTimer = 0;
+            const maxFrames = this.framesPerState[this.currentState] || 4;
+            this.frameIndex = (this.frameIndex + 1) % maxFrames;
+        }
     }
 }

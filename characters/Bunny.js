@@ -1,21 +1,26 @@
 class Bunny extends BasePlayer {
     constructor(pos) {
         super(pos, new Color(0.8, 0.8, 0.8), {
-            maxHealth: 80,       // Less health
-            moveSpeed: 0.3,      // Faster
-            jumpPower: 0.6,      // Higher jumps
-            attackDamage: 15     // Less damage
-        });
+            maxHealth: 80,
+            moveSpeed: 0.3,
+            jumpPower: 0.6,
+            attackDamage: 15
+        }, 'bunny', vec2(1.3, 1.3));
+
+        // Load additional character-specific sprite
+        this.loadAdditionalSprite('doubleJump');
         this.doubleJumpAvailable = true;
     }
 
     handleMovement() {
         super.handleMovement();
         
-        // Double jump with W key (separate from special ability)
+        // Double jump with W key
         if (keyWasPressed('KeyW') && !this.groundObject && this.doubleJumpAvailable) {
             this.velocity.y = this.jumpPower;
             this.doubleJumpAvailable = false;
+            this.currentState = 'doubleJump';
+            this.frameIndex = 0;
         }
     }
 
