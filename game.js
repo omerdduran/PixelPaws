@@ -29,6 +29,7 @@ let gameUI;
 let levelManager;
 let transition;
 
+
 // Sprite sheets konfigürasyonunu kaldır
 const spriteSheets = []; // Boş array bırakalım, çünkü engineInit bir array bekliyor
 
@@ -43,7 +44,7 @@ function gameInit() {
     background = new ParallaxBackground(mainCanvas, {
         get x() { return cameraPos.x },
         get y() { return cameraPos.y }
-    });
+    }, currentLevel);
     gameUI = new GameUI();
     levelManager = new LevelManager();
     transition = new Transition();
@@ -59,6 +60,11 @@ function loadNextLevel() {
         // Fade out
         transition.start('spiral', 0.7, () => {
             levelManager.nextLevel();
+
+            background = new ParallaxBackground(mainCanvas, {
+                get x() { return cameraPos.x },
+                get y() { return cameraPos.y }
+            }, levelManager.currentLevelIndex);
             // Fade in
             transition.start('spiral', 0.7, null, -1);
         }, 1);
@@ -138,15 +144,22 @@ function drawStartScreen() {
 function drawCredits() {
     drawMenuBackground();
     
+    // Set the context properties for centering the text
+    overlayContext.textAlign = 'center'; // Horizontally center the text
+    overlayContext.textBaseline = 'middle'; // Vertically center the text
+
+    // Draw the credits title
     overlayContext.font = '36px Arial';
     overlayContext.fillStyle = '#fff';
-    overlayContext.fillText('Credits', mainCanvas.width/2, mainCanvas.height/4);
+    overlayContext.fillText('Credits', mainCanvas.width / 2, mainCanvas.height / 4);
 
+    // Draw the creators' names
     overlayContext.font = '24px Arial';
-    overlayContext.fillText('Ömer Duran & Furkan Ünsalan', mainCanvas.width/2, mainCanvas.height/2);
-    
+    overlayContext.fillText('Ömer Duran & Furkan Ünsalan', mainCanvas.width / 2, mainCanvas.height / 2);
+
+    // Draw the return text
     overlayContext.font = '20px Arial';
-    overlayContext.fillText('Press ESC to return', mainCanvas.width/2, mainCanvas.height * 0.8);
+    overlayContext.fillText('Press ESC to return', mainCanvas.width / 2, mainCanvas.height * 0.8);
 }
 
 function drawMenuBackground() {
@@ -186,16 +199,20 @@ function switchPlayer() {
     
     currentCharacterIndex = (currentCharacterIndex + 1) % availableCharacters.length;
     const CharacterClass = availableCharacters[currentCharacterIndex];
+    
     currentPlayer = new CharacterClass(pos);
     
     currentPlayer.health = health;
     currentPlayer.isActive = true;
+    
+    console.log(cameraPos);
     
     console.log('Transformed to:', CharacterClass.name);
 }
 
 function gameUpdate() {
     transition.update();
+    
     if (gameState === 'start') {
         // Menu navigation
         if (keyWasPressed('ArrowUp')) {
@@ -237,6 +254,7 @@ function updateGameLogic() {
 
     if (currentPlayer) {
         cameraPos = cameraPos.lerp(currentPlayer.pos, .1);
+        console.log("cameraPos: ", cameraPos);
     }
 }
 

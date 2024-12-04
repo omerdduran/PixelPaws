@@ -1,5 +1,12 @@
 class Parrot extends BasePlayer {
     constructor(pos) {
+        super(pos, new Color(1, 0.2, 0.2), {
+            maxHealth: 70,       // Lowest health
+            moveSpeed: 0.25,
+            gravityScale: 0.7    // Floaty
+        });
+        this.flyEnergy = 100;
+
         super(pos, new Color(1, 0.5, 0), {
             maxHealth: 70,
             moveSpeed: 0.35,
