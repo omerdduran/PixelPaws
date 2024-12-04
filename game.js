@@ -9,7 +9,7 @@ let currentPlayer = null;
 let background;
 
 // Add game state tracking
-let gameState = 'start'; // 'start', 'credits', 'playing', 'paused', 'gameover'
+let gameState = 'start'; // 'start', 'credits', 'playing', 'paused', 'completed', 'gameover'
 let menuSelection = 0; // 0: Start, 1: Credits
 let pauseMenuSelection = 0; // 0: Resume, 1: Main Menu
 
@@ -159,8 +159,14 @@ function loadNextLevel() {
     if (currentLevel < levels.length - 1) {
         loadLevel(currentLevel + 1);
     } else {
-        // TODO: Show game complete screen
-        loadLevel(0);
+        // Oyun tamamlandığında
+        gameState = 'completed';
+        // Tüm oyun nesnelerini temizle
+        engineObjects.forEach(o => {
+            if (o !== background) {
+                o.destroy();
+            }
+        });
     }
 }
 
@@ -235,6 +241,11 @@ function gameUpdate() {
         }
     } else if (gameState === 'playing') {
         updateGameLogic();
+    } else if (gameState === 'completed') {
+        // Completed ekranından ana menüye dönüş
+        if (keyWasPressed('Space')) {
+            resetGame();
+        }
     }
 }
 
@@ -257,6 +268,9 @@ function gameRender() {
             break;
         case 'credits':
             drawCredits();
+            break;
+        case 'completed':
+            drawGameComplete();
             break;
         case 'playing':
         case 'paused': // Draw game state even when paused
@@ -386,6 +400,28 @@ function drawPauseMenu() {
             overlayContext.fillText(item, mainCanvas.width/2, menuY + index * menuSpacing);
         }
     });
+}
+
+// Oyun tamamlama ekranı için yeni fonksiyon
+function drawGameComplete() {
+    // Arka plan ve overlay
+    drawMenuBackground();
+    
+    // Başlık
+    overlayContext.textAlign = 'center';
+    overlayContext.textBaseline = 'middle';
+    overlayContext.fillStyle = '#fff';
+    
+    overlayContext.font = '48px Arial';
+    overlayContext.fillText('Congratulations!', mainCanvas.width/2, mainCanvas.height/3);
+    
+    // Alt başlık
+    overlayContext.font = '24px Arial';
+    overlayContext.fillText('You have completed all levels!', mainCanvas.width/2, mainCanvas.height/2);
+    
+    // Yönlendirme metni
+    overlayContext.font = '20px Arial';
+    overlayContext.fillText('Press SPACE to return to main menu', mainCanvas.width/2, mainCanvas.height * 0.7);
 }
 
 engineInit(gameInit, gameUpdate, gameUpdatePost, gameRender, gameRenderPost);
