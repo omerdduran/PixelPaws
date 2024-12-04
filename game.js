@@ -29,44 +29,18 @@ let gameUI;
 let levelManager;
 let transition;
 
-function drawImage(image, pos, size, rotation, center, mirrorX, alpha, tileIndex, sourceSize, sourcePos) {
-    if (!image.complete) return; // Ensure the image has loaded
 
-    const ctx = mainCanvas.getContext('2d');
-    ctx.save();
-    
-    const tileWidth = sourceSize.x * image.width;
-    const tileHeight = sourceSize.y * image.height;
-    const sourceX = sourcePos.x * image.width;
-    const sourceY = sourcePos.y * image.height;
-
-    // Adjust position and rotation
-    ctx.translate(pos.x * gameScale, pos.y * gameScale);  // Scale the position to the game scale
-    if (mirrorX) {
-        ctx.scale(-1, 1);  // Flip horizontally
-        ctx.translate(-size.x * gameScale, 0);  // Correct for flipping by shifting the sprite
-    }
-    ctx.rotate(rotation);
-    ctx.globalAlpha = alpha;
-
-    // Draw image from sprite sheet
-    ctx.drawImage(
-        image,
-        sourceX, sourceY, tileWidth, tileHeight,   // Source rectangle
-        -center.x * size.x * gameScale,          // Destination x
-        -center.y * size.y * gameScale,          // Destination y
-        size.x * gameScale,                      // Destination width
-        size.y * gameScale                       // Destination height
-    );
-
-    ctx.restore();
-}
-
-
+// Sprite sheets konfigürasyonunu kaldır
+const spriteSheets = []; // Boş array bırakalım, çünkü engineInit bir array bekliyor
 
 function gameInit() {
     cameraScale = gameScale;
     gravity = -0.02;
+    
+    // Piksel-perfect rendering için canvas ayarları
+    mainContext.imageSmoothingEnabled = false;
+    overlayContext.imageSmoothingEnabled = false;
+    
     background = new ParallaxBackground(mainCanvas, {
         get x() { return cameraPos.x },
         get y() { return cameraPos.y }

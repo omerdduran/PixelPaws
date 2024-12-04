@@ -1,33 +1,32 @@
 class Bear extends BasePlayer {
     constructor(pos) {
         super(pos, new Color(0.6, 0.4, 0.2), {
-            maxHealth: 150,      // More health
-            moveSpeed: 0.15,     // Slower
-            attackDamage: 30,    // Higher damage
-            attackRange: 2,      // Longer attack range
-            attackCooldownTime: 0.7 // Slower attacks
-        });
+            maxHealth: 150,
+            moveSpeed: 0.15,
+            attackDamage: 30,
+            attackRange: 2,
+            attackCooldownTime: 0.7
+        }, 'bear', vec2(2, 2));
+
+        this.framesPerState = {
+            ...this.framesPerState,
+            'idle': 6,
+            'berserker': 8
+        };
+
+        
+        this.loadAdditionalSprite('berserker');
         this.berserkerMode = false;
     }
 
     useSpecialAbility() {
-        // Berserker Mode
         if (!this.berserkerMode) {
             this.berserkerMode = true;
             this.attackDamage *= 2;
             this.specialAbilityDuration = 5;
             this.specialAbilityCooldown = 15;
-        }
-    }
-
-    update() {
-        super.update();
-        if (this.berserkerMode && this.specialAbilityDuration > 0) {
-            this.specialAbilityDuration -= 1/60;
-            if (this.specialAbilityDuration <= 0) {
-                this.berserkerMode = false;
-                this.attackDamage /= 2;
-            }
+            this.currentState = 'berserker';
+            this.frameIndex = 0;
         }
     }
 } 

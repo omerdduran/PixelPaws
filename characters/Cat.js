@@ -5,23 +5,6 @@ class Cat extends BasePlayer {
             moveSpeed: 0.25,
             attackCooldownTime: 0.3
         });
-
-        // Set correct sprite size relative to world units
-        this.spriteSize = vec2(2, 2); // Make sprite larger than collision box
-        
-        // Initialize the sprite sheet with absolute path
-        this.spriteSheet = new Image();
-        this.spriteSheet.src = "/assets/characters/redPlayer.png"; // Use absolute path
-        
-        this.loadSpriteSheet(this.spriteSheet.src, 32, 32, {
-            'idle': { startFrame: 0, endFrame: 4 },
-            'walk': { startFrame: 0, endFrame: 6 },
-            'jump': { startFrame: 2, endFrame: 2 },
-            'attack': { startFrame: 3, endFrame: 4 },
-            'wallClimb': { startFrame: 1, endFrame: 2 }
-        });
-        
-        this.frameDuration = 1/12;
     }
 
   useSpecialAbility() {
@@ -32,6 +15,10 @@ class Cat extends BasePlayer {
       this.velocity.y = this.jumpPower * 0.7;
       this.specialAbilityCooldown = 1;
       this.setAnimation("wallClimb");
+        }, 'cat', vec2(1.2, 1.2));
+
+        // Load additional character-specific sprite
+        this.loadAdditionalSprite('climb');
     }
   }
 
@@ -48,4 +35,3 @@ class Cat extends BasePlayer {
       this.setAnimation("wallClimb");
     }
   }
-}

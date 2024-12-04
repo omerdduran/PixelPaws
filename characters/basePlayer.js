@@ -1,18 +1,7 @@
 class BasePlayer extends EngineObject {
-    constructor(pos, color, stats = {}) {
-        super(pos, vec2(1, 1), undefined, 0, color);
-
-        // Sprite properties
-        this.spriteSheet = null;
-        this.spriteSize = vec2(32, 32);
-        this.frameWidth = 0;
-        this.frameHeight = 0;
-        this.currentAnimation = 'idle';
-        this.frameIndex = 0;
-        this.frameTime = 0;
-        this.frameDuration = 1/8;
-        this.animations = {};
-
+    constructor(pos, color, stats = {}, characterType = '', size = vec2(1.5, 1.5)) {
+        super(pos, size, undefined, 0, color);
+        
         // Base stats that can be overridden
         this.gravityScale = stats.gravityScale ?? 1;
         this.jumpPower = stats.jumpPower ?? 0.4;
@@ -21,7 +10,7 @@ class BasePlayer extends EngineObject {
         this.attackDamage = stats.attackDamage ?? 20;
         this.attackRange = stats.attackRange ?? 1.5;
         this.attackCooldownTime = stats.attackCooldownTime ?? 0.5;
-
+        
         // Initialize other properties
         this.setCollision(true);
         this.health = this.maxHealth;
@@ -41,88 +30,151 @@ class BasePlayer extends EngineObject {
         this.specialAbilityCooldown = 0;
         this.specialAbilityDuration = 0;
         this.isUsingSpecialAbility = false;
-    }
 
-    loadSpriteSheet(imagePath, frameWidth, frameHeight, animationData) {
-        this.spriteSheet = new Image();
-        this.spriteSheet.src = imagePath;
-        this.frameWidth = frameWidth;
-        this.frameHeight = frameHeight;
-        this.animations = animationData;
-    }
+        // Animation properties
+        this.characterType = characterType.toLowerCase();
+        this.sprites = {};
+        this.loadedSprites = 0;
+        this.currentState = 'idle';
+        this.frameIndex = 0;
+        this.animationTimer = 0;
+        this.animationSpeed = 0.15;
+        this.lastState = 'idle';
+        this.framesPerState = {
+            'idle': 8,
+            'run': 5,
+            'attack': 7,
+            'jump': 11,
+            'hurt': 3,
+            'die': 12
+        };
 
-    setAnimation(animationName) {
-        if (this.currentAnimation !== animationName && this.animations[animationName]) {
-            this.currentAnimation = animationName;
-            this.frameIndex = this.animations[animationName].startFrame;
-            this.frameTime = 0;
+        // Load sprites if character type is provided
+        if (this.characterType) {
+            this.loadSprites();
         }
     }
 
-    updateAnimation() {
-        if (!this.animations[this.currentAnimation]) return;
+    loadSprites() {
+        // Define base sprite states that all characters share
+        const baseStates = ['idle', 'run', 'attack', 'jump', 'hurt', 'die'];
         
-        this.frameTime += 1/60;
-        if (this.frameTime >= this.frameDuration) {
-            this.frameTime = 0;
-            this.frameIndex++;
-            
-            const anim = this.animations[this.currentAnimation];
-            if (this.frameIndex > anim.endFrame) {
-                this.frameIndex = anim.startFrame;
-            }
-        }
+        // Load each sprite
+        baseStates.forEach(state => {
+            const img = new Image();
+            img.onload = () => {
+                this.loadedSprites++;
+                console.log(`Loaded ${state} sprite for ${this.characterType}`);
+            };
+            img.onerror = () => {
+                console.error(`Failed to load ${state} sprite for ${this.characterType} at path: sprites/${this.characterType}/${state}.png`);
+            };
+            img.src = `sprites/${this.characterType}/${state}.png`;
+            this.sprites[state] = img;
+        });
+    }
+
+    // Add a method to load additional character-specific sprites
+    loadAdditionalSprite(stateName) {
+        const img = new Image();
+        img.onload = () => {
+            console.log(`Loaded ${stateName} sprite for ${this.characterType}`);
+        };
+        img.onerror = () => {
+            console.error(`Failed to load ${stateName} sprite for ${this.characterType}`);
+        };
+        img.src = `sprites/${this.characterType}/${stateName}.png`;
+        this.sprites[stateName] = img;
     }
 
     render() {
-    if (this.spriteSheet) {
-        let renderPos = this.pos;                    
+        // Determine current state
+        let newState = 'idle';
         
-        drawImage(
-            this.spriteSheet,
-            renderPos,
-            this.spriteSize,
-            0,
-            vec2(0.5, 0.5), // Center the sprite
-            this.facingDirection < 0,
-            1,
-            this.frameIndex,
-            vec2(this.frameWidth / this.spriteSheet.width, this.frameHeight / this.spriteSheet.height),
-            vec2(
-                this.frameIndex * this.frameWidth / this.spriteSheet.width,
-                0
-            )
-        );
-    } else {
-        super.render();
-    }
-}
-
-    update() {
-        super.update();
-        this.updateAnimation();
-        
-        if (this.isActive) {
-            this.handleMovement();
-            this.handleAttack();
-            
-            // Update animation states
-            if (this.isAttacking) {
-                this.setAnimation('attack');
-            } else if (!this.groundObject) {
-                this.setAnimation('jump');
-            } else if (Math.abs(this.velocity.x) > 0) {
-                this.setAnimation('walk');
-            } else {
-                this.setAnimation('idle');
-            }
-        } else {
-            this.velocity.x = 0;
+        if (this.isAttacking) {
+            newState = 'attack';
+        } else if (Math.abs(this.velocity.x) > 0.01) {
+            newState = 'run';
+        } else if (!this.groundObject) {
+            newState = 'jump';
         }
 
-        this.handleFallDamage();
-        if (this.attackCooldown > 0) {
-            this.attackCooldown -= 1/60;
+        // If taking damage, briefly show hurt sprite
+        if (this.lastDamageTime > Date.now() - 200) {
+            newState = 'hurt';
+        }
+
+        // State change handling with smooth transitions
+        if (newState !== this.currentState) {
+            // Sadece bazı durumlarda anında değiştir
+            const instantTransitions = ['hurt', 'attack'];
+            if (instantTransitions.includes(newState) || 
+                instantTransitions.includes(this.currentState)) {
+                this.frameIndex = 0;
+                this.animationTimer = 0;
+            } else {
+                // Diğer durumlarda mevcut frame'i tamamla
+                if (this.animationTimer < 0.5) {
+                    newState = this.currentState;
+                }
+            }
+            this.currentState = newState;
+        }
+
+        // Update animation with precise timing
+        this.updateAnimation();
+
+        // Draw the current sprite
+        const sprite = this.sprites[this.currentState];
+        if (sprite && sprite.complete && sprite.naturalWidth !== 0) {
+            // Her durum için frame sayısını al
+            const frameCount = this.framesPerState[this.currentState] || 4;
+            const frameWidth = sprite.width / frameCount;
+            const frameHeight = sprite.height;
+            
+            // Dünya koordinatlarını ekran koordinatlarına çevir ve tam sayıya yuvarla
+            const screenPos = worldToScreen(this.pos);
+            const scale = cameraScale * 2;
+            
+            overlayContext.save();
+            overlayContext.imageSmoothingEnabled = false;
+            
+            // Sprite'ın merkez noktasını hesapla
+            const centerX = Math.round(screenPos.x);
+            const centerY = Math.round(screenPos.y);
+            
+            // Sprite'ın boyutlarını hesapla
+            const drawWidth = Math.round(scale);
+            const drawHeight = Math.round(scale);
+            
+            // Sprite'ın çizim pozisyonunu hesapla
+            const drawX = centerX - drawWidth / 2;
+            const drawY = centerY - drawHeight / 2;
+            
+            // Frame indeksini tam sayıya yuvarla
+            const frameX = Math.floor(this.frameIndex) * frameWidth;
+            
+            overlayContext.translate(centerX, centerY);
+            
+            if (this.velocity.x < 0) {
+                overlayContext.scale(-1, 1);
+            }
+            
+            try {
+                overlayContext.drawImage(
+                    sprite,
+                    frameX, 0,                    // Source X, Y
+                    frameWidth, frameHeight,      // Source Width, Height
+                    -drawWidth/2, -drawHeight/2,  // Destination X, Y
+                    drawWidth, drawHeight         // Destination Width, Height
+                );
+            } catch (error) {
+                console.error('Error drawing sprite:', error);
+            }
+            
+            overlayContext.restore();
+        } else {
+            drawRect(this.pos, vec2(1), this.color);
         }
     }
 
@@ -131,7 +183,23 @@ class BasePlayer extends EngineObject {
         console.log('Coins collected:', this.coins);
     }
 
+    update() {
+        super.update();
+        
+        if (this.isActive) {
+            this.handleMovement();
+            this.handleAttack();
+        } else {
+            this.velocity.x = 0;
+        }
+        this.handleFallDamage();
+        if (this.attackCooldown > 0) {
+            this.attackCooldown -= 1 / 60;
+        }
+    }
+
     handleMovement() {
+        // Basic movement controls for all characters
         if (keyIsDown('ArrowRight')) {
             this.velocity.x = this.moveSpeed;
             this.facingDirection = 1;
@@ -144,14 +212,17 @@ class BasePlayer extends EngineObject {
             this.velocity.x = 0;
         }
 
+        // Jump control
         if (keyWasPressed('KeyW') && this.groundObject) {
             this.velocity.y = this.jumpPower;
         }
 
+        // Attack control
         if (keyWasPressed('Space') && this.attackCooldown <= 0) {
             this.startAttack();
         }
 
+        // Special ability control
         if (keyWasPressed('KeyQ') && this.specialAbilityCooldown <= 0) {
             this.useSpecialAbility();
         }
@@ -164,6 +235,7 @@ class BasePlayer extends EngineObject {
         } else if (!this.wasGrounded) {
             if (Math.abs(this.maxFallSpeed) > this.fallDamageThreshold) {
                 const damage = Math.floor(Math.abs(this.maxFallSpeed) * 100);
+                console.log('Fall damage:', damage, 'Fall speed:', this.maxFallSpeed);
                 this.takeDamage(damage);
             }
             this.wasGrounded = true;
@@ -177,17 +249,23 @@ class BasePlayer extends EngineObject {
 
     takeDamage(amount) {
         const currentTime = Date.now();
+
         if (currentTime - this.lastDamageTime >= this.damageCooldown) {
             this.health = Math.max(0, this.health - amount);
+
             if (this.health <= 0) {
                 this.health = this.maxHealth;
                 levelManager.loadLevel(levelManager.currentLevelIndex);
             }
+
             this.lastDamageTime = currentTime;
         }
     }
 
     handleAttack() {
+        if (keyWasPressed('Space') && this.attackCooldown <= 0) {
+            this.startAttack();
+        }
         if (this.isAttacking) {
             const attackPos = this.pos.add(vec2(this.facingDirection * this.attackRange / 2, 0));
             engineObjects.forEach(obj => {
@@ -195,7 +273,7 @@ class BasePlayer extends EngineObject {
                     obj.destroy();
                 }
             });
-            this.attackDuration -= 1/60;
+            this.attackDuration -= 1 / 60;
             if (this.attackDuration <= 0) {
                 this.endAttack();
             }
@@ -213,6 +291,15 @@ class BasePlayer extends EngineObject {
     }
 
     useSpecialAbility() {
-        // To be implemented by child classes
+    }
+
+    // Update animation frame with precise timing
+    updateAnimation() {
+        this.animationTimer += this.animationSpeed;
+        if (this.animationTimer >= 1) {
+            this.animationTimer = 0;
+            const maxFrames = this.framesPerState[this.currentState] || 4;
+            this.frameIndex = (this.frameIndex + 1) % maxFrames;
+        }
     }
 }
