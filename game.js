@@ -9,8 +9,9 @@ let currentPlayer = null;
 let background;
 
 // Add game state tracking
-let gameState = 'start'; // 'start', 'credits', 'playing', 'gameover'
+let gameState = 'start'; // 'start', 'credits', 'playing', 'paused', 'gameover'
 let menuSelection = 0; // 0: Start, 1: Credits
+let pauseMenuSelection = 0; // 0: Resume, 1: Main Menu
 
 // Add start screen background
 let startScreenBackground = new Image();
@@ -20,6 +21,10 @@ startScreenBackground.src = '../assets/startscreen.png';
 let textLogo = new Image();
 textLogo.src = '../assets/text-logo.png';
 
+// Add at the top with other variables
+let timeScale = 1;  // Replace engineUpdateEnabled with timeScale
+
+// Add this function before engineInit
 function drawStartScreen() {
     // Draw the background image
     if (startScreenBackground.complete) {
@@ -229,14 +234,19 @@ function gameUpdate() {
             gameState = 'start';
         }
     } else if (gameState === 'playing') {
-        // Existing game update code
-        if (keyWasPressed('Digit7')) {
-            switchPlayer();
-        }
+        updateGameLogic();
+    }
+}
 
-        if (currentPlayer) {
-            cameraPos = cameraPos.lerp(currentPlayer.pos, .1);
-        }
+// Add new function to handle game logic updates
+function updateGameLogic() {
+    // Move all game logic here
+    if (keyWasPressed('Digit7')) {
+        switchPlayer();
+    }
+
+    if (currentPlayer) {
+        cameraPos = cameraPos.lerp(currentPlayer.pos, .1);
     }
 }
 
@@ -249,7 +259,7 @@ function gameRender() {
             drawCredits();
             break;
         case 'playing':
-            // Existing game render code
+        case 'paused': // Draw game state even when paused
             background.render();
             
             levels[currentLevel].forEach(p => {
@@ -269,11 +279,113 @@ function gameRender() {
                     new Color(1, 1, 0)
                 );
             }
+            
+            // Draw pause menu over the game if paused
+            if (gameState === 'paused') {
+                drawPauseMenu();
+            }
             break;
     }
 }
 
-function gameUpdatePost() {}
+function gameUpdatePost() {
+    // Handle pause state changes
+    if (gameState === 'playing' && keyWasPressed('Escape')) {
+        gameState = 'paused';
+        pauseMenuSelection = 0;
+    } else if (gameState === 'paused') {
+        // Pause menu controls
+        if (keyWasPressed('ArrowUp')) {
+            pauseMenuSelection = (pauseMenuSelection - 1 + 2) % 2;
+        }
+        if (keyWasPressed('ArrowDown')) {
+            pauseMenuSelection = (pauseMenuSelection + 1) % 2;
+        }
+        if (keyWasPressed('Enter') || keyWasPressed('Space')) {
+            switch(pauseMenuSelection) {
+                case 0: // Resume
+                    gameState = 'playing';
+                    break;
+                case 1: // Main Menu
+                    resetGame();
+                    break;
+            }
+        }
+        // Quick resume with ESC
+        if (keyWasPressed('Escape')) {
+            gameState = 'playing';
+        }
+    }
+
+    // Use the engine's pause system
+    setPaused(gameState === 'paused');
+    
+    if (gameState === 'paused') {
+        engineObjects.forEach(object => {
+            if (object !== background) {
+                // Stop all movement
+                object.velocity = vec2(0, 0);
+                object.acceleration = vec2(0, 0);
+                object.gravity = 0;
+            }
+        });
+    }
+}
+
+// Add this new function to handle game reset
+function resetGame() {
+    // Destroy all game objects
+    engineObjects.forEach(o => {
+        if (o !== background) {
+            o.destroy();
+        }
+    });
+    
+    // Reset game state
+    gameState = 'start';
+    menuSelection = 0;
+    currentPlayer = null;
+    currentLevel = 0;
+    activePlayerIndex = 0;
+    
+    // Reset camera
+    cameraPos = vec2(0, 0);
+    
+    // Clear tile collision data
+    initTileCollision(worldSize);
+}
+
 function gameRenderPost() {}
+
+function drawPauseMenu() {
+    // Add dark overlay to show game is paused
+    overlayContext.fillStyle = 'rgba(0, 0, 0, 0.7)';
+    overlayContext.fillRect(0, 0, mainCanvas.width, mainCanvas.height);
+    
+    // Draw pause menu text
+    overlayContext.textAlign = 'center';
+    overlayContext.textBaseline = 'middle';
+    
+    // Pause title
+    overlayContext.font = '36px Arial';
+    overlayContext.fillStyle = '#fff';
+    overlayContext.fillText('PAUSED', mainCanvas.width/2, mainCanvas.height/3);
+    
+    // Menu items
+    overlayContext.font = '24px Arial';
+    const pauseItems = ['Resume', 'Main Menu'];
+    const menuY = mainCanvas.height/2;
+    const menuSpacing = 40;
+
+    pauseItems.forEach((item, index) => {
+        if (index === pauseMenuSelection) {
+            overlayContext.fillStyle = '#ffff00';
+            overlayContext.fillText('> ' + item + ' <', mainCanvas.width/2, menuY + index * menuSpacing);
+        } else {
+            overlayContext.fillStyle = '#fff';
+            overlayContext.fillText(item, mainCanvas.width/2, menuY + index * menuSpacing);
+        }
+    });
+}
 
 engineInit(gameInit, gameUpdate, gameUpdatePost, gameRender, gameRenderPost);
