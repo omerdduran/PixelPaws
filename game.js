@@ -191,24 +191,30 @@ function drawMenuBackground() {
 
 function switchPlayer() {
     if (!currentPlayer) return;
-    
+
     const pos = currentPlayer.pos;
     const health = currentPlayer.health;
-    
+
+    // Destroy the current player
     currentPlayer.destroy();
-    
+
+    // Switch to the next character
     currentCharacterIndex = (currentCharacterIndex + 1) % availableCharacters.length;
     const CharacterClass = availableCharacters[currentCharacterIndex];
-    
-    currentPlayer = new CharacterClass(pos);
-    
+
+    // Slightly raise the new character's position for a "switching in air" effect
+    const airborneOffset = vec2(0, 0.5); // Adjust the Y offset as needed
+    const newPos = pos.add(airborneOffset);
+
+    currentPlayer = new CharacterClass(newPos);
+
+    // Carry over health and activate the new player
     currentPlayer.health = health;
     currentPlayer.isActive = true;
-    
-    console.log(cameraPos);
-    
+
     console.log('Transformed to:', CharacterClass.name);
 }
+
 
 function gameUpdate() {
     transition.update();
@@ -254,7 +260,6 @@ function updateGameLogic() {
 
     if (currentPlayer) {
         cameraPos = cameraPos.lerp(currentPlayer.pos, .1);
-        console.log("cameraPos: ", cameraPos);
     }
 }
 

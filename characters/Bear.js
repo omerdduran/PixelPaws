@@ -11,12 +11,16 @@ class Bear extends BasePlayer {
         this.framesPerState = {
             ...this.framesPerState,
             'idle': 6,
-            'berserker': 8
+            'run': 5,
+            'attack': 7,
+            'jump': 11,
+            'hurt': 10,
+            'die': 12
         };
 
         
-        this.loadAdditionalSprite('berserker');
-        this.berserkerMode = false;
+        // this.loadAdditionalSprite('berserker');
+        // this.berserkerMode = false;
     }
 
     useSpecialAbility() {

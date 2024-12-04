@@ -7,6 +7,17 @@ class Turtle extends BasePlayer {
             attackRange: 1.2
         }, 'turtle', vec2(1.8, 1.4));
 
+        this.framesPerState = {
+            ...this.framesPerState,
+            'idle': 8,
+            'run': 8,
+            'attack': 10,
+            'jump': 14,
+            'hurt': 12,
+            'die': 10,
+            'shield': 13
+        };
+
         // Load additional character-specific sprite
         this.loadAdditionalSprite('shield');
         this.isShielding = false;

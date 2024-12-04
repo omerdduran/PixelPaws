@@ -4,10 +4,21 @@ class Dog extends BasePlayer {
             maxHealth: 120,
             moveSpeed: 0.22,
             attackRange: 1.8
-        }, 'dog', vec2(1.5, 1.5));
+        }, 'dog', vec2(2, 2));
 
         // Load additional character-specific sprite
         this.loadAdditionalSprite('bark');
+
+        this.framesPerState = {
+            ...this.framesPerState,
+            'idle': 7,
+            'run': 5,
+            'attack': 16,
+            'jump': 13,
+            'hurt': 15,
+            'die': 11,
+            'bark': 12
+        };
     }
 
     useSpecialAbility() {

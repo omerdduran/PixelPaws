@@ -126,25 +126,33 @@ class Transition {
     renderSpiral(progress) {
         const centerX = mainCanvas.width / 2;
         const centerY = mainCanvas.height / 2;
-        const maxRadius = Math.sqrt(centerX * centerX + centerY * centerY);
+        const maxRadius = Math.sqrt(mainCanvas.width ** 2 + mainCanvas.height ** 2) / 2; // Ensure it covers the diagonal
         
         overlayContext.save();
         overlayContext.fillStyle = '#000';
         overlayContext.beginPath();
+    
+        const spiralLoops = 10; // Number of loops for the spiral
+        const totalSteps = spiralLoops * Math.PI * 2; // Total radians for the spiral
+        const steps = 200; // Number of steps in the spiral
         
-        for (let angle = 0; angle < Math.PI * 8; angle += 0.1) {
-            const radius = (angle / (Math.PI * 8)) * maxRadius * (1 - progress);
+        for (let step = 0; step <= steps; step++) {
+            const angle = (step / steps) * totalSteps; // Current angle in the spiral
+            const radius = maxRadius * (1 - progress) * (step / steps); // Spiral's radius at the current step
+            
             const x = centerX + Math.cos(angle) * radius;
             const y = centerY + Math.sin(angle) * radius;
-            
-            if (angle === 0) {
+    
+            if (step === 0) {
                 overlayContext.moveTo(x, y);
             } else {
                 overlayContext.lineTo(x, y);
             }
         }
         
+        overlayContext.lineTo(centerX, centerY); // Ensure it closes the shape
         overlayContext.fill();
         overlayContext.restore();
     }
+    
 }

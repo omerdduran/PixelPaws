@@ -4,23 +4,33 @@ class Cat extends BasePlayer {
           maxHealth: 90,
           moveSpeed: 0.25,
           attackCooldownTime: 0.3
-      });
+      }, 'cat', vec2(2, 2));
       this.specialAbilityCooldown = 0; // Initialize cooldown
       this.jumpPower = 5; // Set a jump power value
       this.touchingWall = false; // Initialize wall touching state
+
+      this.framesPerState = {
+        ...this.framesPerState,
+        'idle': 14,
+        'run': 7,
+        'attack': 9,
+        'jump': 13,
+        'hurt': 7,
+        'die': 15
+    };
   }
 
-  useSpecialAbility() {
-      const rightCheck = getTileCollisionData(this.pos.add(vec2(0.6, 0)));
-      const leftCheck = getTileCollisionData(this.pos.add(vec2(-0.6, 0)));
+//   useSpecialAbility() {
+//       const rightCheck = getTileCollisionData(this.pos.add(vec2(0.6, 0)));
+//       const leftCheck = getTileCollisionData(this.pos.add(vec2(-0.6, 0)));
 
-      if (rightCheck || leftCheck) {
-          this.velocity.y = this.jumpPower * 0.7;
-          this.specialAbilityCooldown = 1; // Set cooldown for the special ability
-          this.setAnimation("wallClimb");
-          this.loadAdditionalSprite('climb'); // Load additional character-specific sprite
-      }
-  }
+//       if (rightCheck || leftCheck) {
+//           this.velocity.y = this.jumpPower * 0.7;
+//           this.specialAbilityCooldown = 1; // Set cooldown for the special ability
+//           this.setAnimation("wallClimb");
+//           this.loadAdditionalSprite('climb'); // Load additional character-specific sprite
+//       }
+//   }
 
   update() {
       super.update();
@@ -31,8 +41,8 @@ class Cat extends BasePlayer {
       );
 
       // Update animation for wall climbing
-      if (this.touchingWall && Math.abs(this.velocity.y) > 0) {
-          this.setAnimation("wallClimb");
-      }
+    //   if (this.touchingWall && Math.abs(this.velocity.y) > 0) {
+    //       this.setAnimation("wallClimb");
+    //   }
   }
 }

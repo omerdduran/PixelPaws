@@ -10,6 +10,15 @@ class Bunny extends BasePlayer {
         // Load additional character-specific sprite
         this.loadAdditionalSprite('doubleJump');
         this.doubleJumpAvailable = true;
+
+        this.framesPerState = {
+            'idle': 8,
+            'run': 5,
+            'attack': 7,
+            'jump': 11,
+            'hurt': 3,
+            'die': 9
+        };
     }
 
     handleMovement() {

@@ -41,12 +41,12 @@ class BasePlayer extends EngineObject {
         this.animationSpeed = 0.15;
         this.lastState = 'idle';
         this.framesPerState = {
-            'idle': 8,
-            'run': 5,
-            'attack': 7,
-            'jump': 11,
-            'hurt': 3,
-            'die': 12
+            'idle': 0,
+            'run': 0,
+            'attack': 0,
+            'jump': 0,
+            'hurt': 0,
+            'die': 0
         };
 
         // Load sprites if character type is provided
@@ -242,7 +242,7 @@ class BasePlayer extends EngineObject {
             this.maxFallSpeed = 0;
         }
         if (this.pos.y < -5) {
-            this.takeDamage(50);
+            this.takeDamage(20);
             levelManager.loadLevel(levelManager.currentLevelIndex);
         }
     }
