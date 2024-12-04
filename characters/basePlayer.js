@@ -1,11 +1,18 @@
 class BasePlayer extends EngineObject {
-    constructor(pos, color) {
+    constructor(pos, color, stats = {}) {
         super(pos, vec2(1, 1), undefined, 0, color);
-        this.gravityScale = 1;
-        this.jumpPower = 0.4;
-        this.moveSpeed = 0.2;
+        
+        // Base stats that can be overridden
+        this.gravityScale = stats.gravityScale ?? 1;
+        this.jumpPower = stats.jumpPower ?? 0.4;
+        this.moveSpeed = stats.moveSpeed ?? 0.2;
+        this.maxHealth = stats.maxHealth ?? 100;
+        this.attackDamage = stats.attackDamage ?? 20;
+        this.attackRange = stats.attackRange ?? 1.5;
+        this.attackCooldownTime = stats.attackCooldownTime ?? 0.5;
+        
+        // Initialize other properties
         this.setCollision(true);
-        this.maxHealth = 100;
         this.health = this.maxHealth;
         this.fallDamageThreshold = 0.4;
         this.wasGrounded = true;
@@ -15,12 +22,14 @@ class BasePlayer extends EngineObject {
         this.isAttacking = false;
         this.attackCooldown = 0;
         this.attackDuration = 0.2;
-        this.attackCooldownTime = 0.5;
-        this.attackDamage = 20;
-        this.attackRange = 1.5;
         this.facingDirection = 1;
-        this.lastDamageTime = 0; 
-        this.damageCooldown = 2000
+        this.lastDamageTime = 0;
+        this.damageCooldown = 2000;
+
+        // Special ability properties
+        this.specialAbilityCooldown = 0;
+        this.specialAbilityDuration = 0;
+        this.isUsingSpecialAbility = false;
     }
 
     addCoin() {
@@ -30,11 +39,6 @@ class BasePlayer extends EngineObject {
 
     render() {
         super.render();
-        this.drawHealthBar();
-        if (this.isActive) {
-            const coinText = '🪙 ' + this.coins.toString();
-            drawText(coinText, this.pos.add(vec2(0, 2)), 0.5, new Color(1, 1, 0));
-        }
         if (this.isAttacking) {
             const attackPos = this.pos.add(vec2(this.facingDirection * this.attackRange / 2, 0));
             const attackSize = vec2(this.attackRange, 1);
@@ -57,6 +61,33 @@ class BasePlayer extends EngineObject {
     }
 
     handleMovement() {
+        // Basic movement controls for all characters
+        if (keyIsDown('ArrowRight')) {
+            this.velocity.x = this.moveSpeed;
+            this.facingDirection = 1;
+        }
+        else if (keyIsDown('ArrowLeft')) {
+            this.velocity.x = -this.moveSpeed;
+            this.facingDirection = -1;
+        }
+        else {
+            this.velocity.x = 0;
+        }
+
+        // Jump control
+        if (keyWasPressed('KeyW') && this.groundObject) {
+            this.velocity.y = this.jumpPower;
+        }
+
+        // Attack control
+        if (keyWasPressed('Space') && this.attackCooldown <= 0) {
+            this.startAttack();
+        }
+
+        // Special ability control
+        if (keyWasPressed('KeyQ') && this.specialAbilityCooldown <= 0) {
+            this.useSpecialAbility();
+        }
     }
 
     handleFallDamage() {
@@ -74,44 +105,23 @@ class BasePlayer extends EngineObject {
         }
         if (this.pos.y < -5) {
             this.takeDamage(50);
-            loadLevel(currentLevel);
+            levelManager.loadLevel(levelManager.currentLevelIndex);
         }
     }
 
     takeDamage(amount) {
-        const currentTime = Date.now();  // Get current time in milliseconds
+        const currentTime = Date.now();
 
-        // Check if the cooldown has passed
         if (currentTime - this.lastDamageTime >= this.damageCooldown) {
-            // Apply damage
             this.health = Math.max(0, this.health - amount);
 
-            // If health is 0 or below, reload the level (or handle death logic)
             if (this.health <= 0) {
-                this.health = this.maxHealth;  // Reset health to max
-                loadLevel(currentLevel);  // Reload the level (or death handling)
+                this.health = this.maxHealth;
+                levelManager.loadLevel(levelManager.currentLevelIndex);
             }
 
-            // Update the last damage time
             this.lastDamageTime = currentTime;
         }
-    }
-
-    drawHealthBar() {
-        const healthBarWidth = 1;
-        const healthBarHeight = 0.1;
-        const healthBarOffset = vec2(0, 0.7);
-        drawRect(
-            this.pos.add(healthBarOffset),
-            vec2(healthBarWidth, healthBarHeight),
-            new Color(1, 0, 0)
-        );
-        const healthPercent = this.health / this.maxHealth;
-        drawRect(
-            this.pos.add(healthBarOffset).add(vec2((healthPercent - 1) * healthBarWidth / 2, 0)),
-            vec2(healthBarWidth * healthPercent, healthBarHeight),
-            new Color(0, 1, 0)
-        );
     }
 
     handleAttack() {
@@ -140,5 +150,8 @@ class BasePlayer extends EngineObject {
 
     endAttack() {
         this.isAttacking = false;
+    }
+
+    useSpecialAbility() {
     }
 }

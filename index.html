@@ -22,15 +22,41 @@
     
 <!-- Load our game code -->
 <script src="game/background.js"></script>
+<script src="game/gameUI.js"></script>
+<script src="game/transition.js"></script>
+
+<!-- Load base classes first -->
 <script src="characters/basePlayer.js"></script>
-<script src="characters/redPlayer.js"></script>
-<script src="characters/bluePlayer.js"></script>
-<script src="levels/levelData.js"></script>
+<script src="levels/powerup/basePowerUp.js"></script>
+
+<!-- Load game objects -->
 <script src="levels/portal.js"></script>
 <script src="levels/coin.js"></script>
 <script src="levels/enemy.js"></script>
-<script src="levels/healthPack.js"></script>
 <script src="levels/movingPlatform.js"></script>
+
+<!-- Load power-ups -->
+<script src="levels/powerup/speedBoost.js"></script>
+<script src="levels/powerup/jumpBoost.js"></script>
+<script src="levels/powerup/invincibility.js"></script>
+<script src="levels/powerup/doubleDamage.js"></script>
+<script src="levels/powerup/magneticField.js"></script>
+<script src="levels/powerup/healthPack.js"></script>
+
+<!-- Load characters -->
+<script src="characters/Bear.js"></script>
+<script src="characters/Bunny.js"></script>
+<script src="characters/Cat.js"></script>
+<script src="characters/Dog.js"></script>
+<script src="characters/Parrot.js"></script>
+<script src="characters/Turtle.js"></script>
+
+<!-- Load level related scripts -->
+<script src="levels/conf/level1.js"></script>
+<script src="levels/conf/level2.js"></script>
+<script src="levels/conf/levelManager.js"></script>
+
+<!-- Load main game script last -->
 <script src="game.js"></script>
 </body>
 </html>
