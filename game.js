@@ -29,13 +29,48 @@ let gameUI;
 let levelManager;
 let transition;
 
+function drawImage(image, pos, size, rotation, center, mirrorX, alpha, tileIndex, sourceSize, sourcePos) {
+    if (!image.complete) return; // Ensure the image has loaded
+
+    const ctx = mainCanvas.getContext('2d');
+    ctx.save();
+    
+    const tileWidth = sourceSize.x * image.width;
+    const tileHeight = sourceSize.y * image.height;
+    const sourceX = sourcePos.x * image.width;
+    const sourceY = sourcePos.y * image.height;
+
+    // Adjust position and rotation
+    ctx.translate(pos.x * gameScale, pos.y * gameScale);  // Scale the position to the game scale
+    if (mirrorX) {
+        ctx.scale(-1, 1);  // Flip horizontally
+        ctx.translate(-size.x * gameScale, 0);  // Correct for flipping by shifting the sprite
+    }
+    ctx.rotate(rotation);
+    ctx.globalAlpha = alpha;
+
+    // Draw image from sprite sheet
+    ctx.drawImage(
+        image,
+        sourceX, sourceY, tileWidth, tileHeight,   // Source rectangle
+        -center.x * size.x * gameScale,          // Destination x
+        -center.y * size.y * gameScale,          // Destination y
+        size.x * gameScale,                      // Destination width
+        size.y * gameScale                       // Destination height
+    );
+
+    ctx.restore();
+}
+
+
+
 function gameInit() {
     cameraScale = gameScale;
     gravity = -0.02;
     background = new ParallaxBackground(mainCanvas, {
         get x() { return cameraPos.x },
         get y() { return cameraPos.y }
-    });
+    }, currentLevel);
     gameUI = new GameUI();
     levelManager = new LevelManager();
     transition = new Transition();
@@ -51,6 +86,11 @@ function loadNextLevel() {
         // Fade out
         transition.start('spiral', 0.7, () => {
             levelManager.nextLevel();
+
+            background = new ParallaxBackground(mainCanvas, {
+                get x() { return cameraPos.x },
+                get y() { return cameraPos.y }
+            }, levelManager.currentLevelIndex);
             // Fade in
             transition.start('spiral', 0.7, null, -1);
         }, 1);
@@ -130,15 +170,22 @@ function drawStartScreen() {
 function drawCredits() {
     drawMenuBackground();
     
+    // Set the context properties for centering the text
+    overlayContext.textAlign = 'center'; // Horizontally center the text
+    overlayContext.textBaseline = 'middle'; // Vertically center the text
+
+    // Draw the credits title
     overlayContext.font = '36px Arial';
     overlayContext.fillStyle = '#fff';
-    overlayContext.fillText('Credits', mainCanvas.width/2, mainCanvas.height/4);
+    overlayContext.fillText('Credits', mainCanvas.width / 2, mainCanvas.height / 4);
 
+    // Draw the creators' names
     overlayContext.font = '24px Arial';
-    overlayContext.fillText('Ömer Duran & Furkan Ünsalan', mainCanvas.width/2, mainCanvas.height/2);
-    
+    overlayContext.fillText('Ömer Duran & Furkan Ünsalan', mainCanvas.width / 2, mainCanvas.height / 2);
+
+    // Draw the return text
     overlayContext.font = '20px Arial';
-    overlayContext.fillText('Press ESC to return', mainCanvas.width/2, mainCanvas.height * 0.8);
+    overlayContext.fillText('Press ESC to return', mainCanvas.width / 2, mainCanvas.height * 0.8);
 }
 
 function drawMenuBackground() {
@@ -178,16 +225,20 @@ function switchPlayer() {
     
     currentCharacterIndex = (currentCharacterIndex + 1) % availableCharacters.length;
     const CharacterClass = availableCharacters[currentCharacterIndex];
+    
     currentPlayer = new CharacterClass(pos);
     
     currentPlayer.health = health;
     currentPlayer.isActive = true;
+    
+    console.log(cameraPos);
     
     console.log('Transformed to:', CharacterClass.name);
 }
 
 function gameUpdate() {
     transition.update();
+    
     if (gameState === 'start') {
         // Menu navigation
         if (keyWasPressed('ArrowUp')) {
@@ -229,6 +280,7 @@ function updateGameLogic() {
 
     if (currentPlayer) {
         cameraPos = cameraPos.lerp(currentPlayer.pos, .1);
+        console.log("cameraPos: ", cameraPos);
     }
 }
 

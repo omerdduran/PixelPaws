@@ -1,7 +1,18 @@
 class BasePlayer extends EngineObject {
     constructor(pos, color, stats = {}) {
         super(pos, vec2(1, 1), undefined, 0, color);
-        
+
+        // Sprite properties
+        this.spriteSheet = null;
+        this.spriteSize = vec2(32, 32);
+        this.frameWidth = 0;
+        this.frameHeight = 0;
+        this.currentAnimation = 'idle';
+        this.frameIndex = 0;
+        this.frameTime = 0;
+        this.frameDuration = 1/8;
+        this.animations = {};
+
         // Base stats that can be overridden
         this.gravityScale = stats.gravityScale ?? 1;
         this.jumpPower = stats.jumpPower ?? 0.4;
@@ -10,7 +21,7 @@ class BasePlayer extends EngineObject {
         this.attackDamage = stats.attackDamage ?? 20;
         this.attackRange = stats.attackRange ?? 1.5;
         this.attackCooldownTime = stats.attackCooldownTime ?? 0.5;
-        
+
         // Initialize other properties
         this.setCollision(true);
         this.health = this.maxHealth;
@@ -32,36 +43,95 @@ class BasePlayer extends EngineObject {
         this.isUsingSpecialAbility = false;
     }
 
+    loadSpriteSheet(imagePath, frameWidth, frameHeight, animationData) {
+        this.spriteSheet = new Image();
+        this.spriteSheet.src = imagePath;
+        this.frameWidth = frameWidth;
+        this.frameHeight = frameHeight;
+        this.animations = animationData;
+    }
+
+    setAnimation(animationName) {
+        if (this.currentAnimation !== animationName && this.animations[animationName]) {
+            this.currentAnimation = animationName;
+            this.frameIndex = this.animations[animationName].startFrame;
+            this.frameTime = 0;
+        }
+    }
+
+    updateAnimation() {
+        if (!this.animations[this.currentAnimation]) return;
+        
+        this.frameTime += 1/60;
+        if (this.frameTime >= this.frameDuration) {
+            this.frameTime = 0;
+            this.frameIndex++;
+            
+            const anim = this.animations[this.currentAnimation];
+            if (this.frameIndex > anim.endFrame) {
+                this.frameIndex = anim.startFrame;
+            }
+        }
+    }
+
+    render() {
+    if (this.spriteSheet) {
+        let renderPos = this.pos;                    
+        
+        drawImage(
+            this.spriteSheet,
+            renderPos,
+            this.spriteSize,
+            0,
+            vec2(0.5, 0.5), // Center the sprite
+            this.facingDirection < 0,
+            1,
+            this.frameIndex,
+            vec2(this.frameWidth / this.spriteSheet.width, this.frameHeight / this.spriteSheet.height),
+            vec2(
+                this.frameIndex * this.frameWidth / this.spriteSheet.width,
+                0
+            )
+        );
+    } else {
+        super.render();
+    }
+}
+
+    update() {
+        super.update();
+        this.updateAnimation();
+        
+        if (this.isActive) {
+            this.handleMovement();
+            this.handleAttack();
+            
+            // Update animation states
+            if (this.isAttacking) {
+                this.setAnimation('attack');
+            } else if (!this.groundObject) {
+                this.setAnimation('jump');
+            } else if (Math.abs(this.velocity.x) > 0) {
+                this.setAnimation('walk');
+            } else {
+                this.setAnimation('idle');
+            }
+        } else {
+            this.velocity.x = 0;
+        }
+
+        this.handleFallDamage();
+        if (this.attackCooldown > 0) {
+            this.attackCooldown -= 1/60;
+        }
+    }
+
     addCoin() {
         this.coins++;
         console.log('Coins collected:', this.coins);
     }
 
-    render() {
-        super.render();
-        if (this.isAttacking) {
-            const attackPos = this.pos.add(vec2(this.facingDirection * this.attackRange / 2, 0));
-            const attackSize = vec2(this.attackRange, 1);
-            drawRect(attackPos, attackSize, new Color(1, 0, 0, 0.5));
-        }
-    }
-
-    update() {
-        super.update();
-        if (this.isActive) {
-            this.handleMovement();
-            this.handleAttack();
-        } else {
-            this.velocity.x = 0;
-        }
-        this.handleFallDamage();
-        if (this.attackCooldown > 0) {
-            this.attackCooldown -= 1 / 60;
-        }
-    }
-
     handleMovement() {
-        // Basic movement controls for all characters
         if (keyIsDown('ArrowRight')) {
             this.velocity.x = this.moveSpeed;
             this.facingDirection = 1;
@@ -74,17 +144,14 @@ class BasePlayer extends EngineObject {
             this.velocity.x = 0;
         }
 
-        // Jump control
         if (keyWasPressed('KeyW') && this.groundObject) {
             this.velocity.y = this.jumpPower;
         }
 
-        // Attack control
         if (keyWasPressed('Space') && this.attackCooldown <= 0) {
             this.startAttack();
         }
 
-        // Special ability control
         if (keyWasPressed('KeyQ') && this.specialAbilityCooldown <= 0) {
             this.useSpecialAbility();
         }
@@ -97,7 +164,6 @@ class BasePlayer extends EngineObject {
         } else if (!this.wasGrounded) {
             if (Math.abs(this.maxFallSpeed) > this.fallDamageThreshold) {
                 const damage = Math.floor(Math.abs(this.maxFallSpeed) * 100);
-                console.log('Fall damage:', damage, 'Fall speed:', this.maxFallSpeed);
                 this.takeDamage(damage);
             }
             this.wasGrounded = true;
@@ -111,23 +177,17 @@ class BasePlayer extends EngineObject {
 
     takeDamage(amount) {
         const currentTime = Date.now();
-
         if (currentTime - this.lastDamageTime >= this.damageCooldown) {
             this.health = Math.max(0, this.health - amount);
-
             if (this.health <= 0) {
                 this.health = this.maxHealth;
                 levelManager.loadLevel(levelManager.currentLevelIndex);
             }
-
             this.lastDamageTime = currentTime;
         }
     }
 
     handleAttack() {
-        if (keyWasPressed('Space') && this.attackCooldown <= 0) {
-            this.startAttack();
-        }
         if (this.isAttacking) {
             const attackPos = this.pos.add(vec2(this.facingDirection * this.attackRange / 2, 0));
             engineObjects.forEach(obj => {
@@ -135,7 +195,7 @@ class BasePlayer extends EngineObject {
                     obj.destroy();
                 }
             });
-            this.attackDuration -= 1 / 60;
+            this.attackDuration -= 1/60;
             if (this.attackDuration <= 0) {
                 this.endAttack();
             }
@@ -153,5 +213,6 @@ class BasePlayer extends EngineObject {
     }
 
     useSpecialAbility() {
+        // To be implemented by child classes
     }
 }

@@ -1,7 +1,8 @@
 class ParallaxBackground {
-    constructor(canvas, camera) {
+    constructor(canvas, camera, levelIndex) {
         this.canvas = canvas;
         this.camera = camera;
+        this.currentLevel = currentLevel
         this.ctx = canvas.getContext('2d');
         
         this.layers = [
@@ -12,7 +13,7 @@ class ParallaxBackground {
 
         this.layers.forEach((layer, index) => {
             layer.image = new Image();
-            layer.image.src = `../assets/backgrounds/bg_layer${index + 1}.png`;
+            layer.image.src = `../assets/backgrounds/level-${levelIndex + 1}/bg_layer${index + 1}.png`;
             layer.image.onerror = () => console.error(`Failed to load background layer ${index + 1}`);
         });
     }

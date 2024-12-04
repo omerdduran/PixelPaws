@@ -78,6 +78,7 @@ class GameUI {
         overlayContext.font = 'bold 16px Arial';
         overlayContext.fillStyle = this.colors.text;
         overlayContext.textAlign = 'center';
+        overlayContext.textBaseline = 'middle';
         overlayContext.fillText(
             `${Math.ceil(currentPlayer.health)} / ${currentPlayer.maxHealth}`,
             healthX + healthBarWidth/2,
@@ -96,16 +97,20 @@ class GameUI {
         const boxHeight = 50;
         const x = mainCanvas.width - this.padding - boxWidth;
         const y = this.padding;
-
+    
+        // Ensure that currentLevelIndex is updated and correct
+        const levelIndex = levelManager.currentLevelIndex; // Assuming you have a LevelManager instance called levelManager
+        const levelText = `Level ${levelIndex + 1}`; // Level is 1-based, so add 1
+    
         // Draw background panel
         this.drawPanel(x, y, boxWidth, boxHeight);
-
+    
         // Draw level text
         overlayContext.font = 'bold 24px Arial';
         overlayContext.fillStyle = this.colors.text;
         overlayContext.textAlign = 'center';
         overlayContext.textBaseline = 'middle';
-        overlayContext.fillText(`Level ${currentLevel + 1}`, x + boxWidth/2, y + boxHeight/2);
+        overlayContext.fillText(levelText, x + boxWidth / 2, y + boxHeight / 2);
     }
 
     drawControlsHelp() {
@@ -121,6 +126,7 @@ class GameUI {
         overlayContext.textAlign = 'left';
         overlayContext.textBaseline = 'top';
         overlayContext.fillStyle = this.colors.text;
+        overlayContext.textBaseline = 'middle';
         overlayContext.font = '16px Arial';
 
         const controls = [

@@ -6,6 +6,20 @@ class Parrot extends BasePlayer {
             gravityScale: 0.7    // Floaty
         });
         this.flyEnergy = 100;
+
+        this.spriteSize = vec2(2, 2); // Make sprite larger than collision box
+        
+        // Initialize the sprite sheet with absolute path
+        this.spriteSheet = new Image();
+        this.spriteSheet.src = "/assets/characters/birdPlayer.png"; // Use absolute path
+        
+        this.loadSpriteSheet(this.spriteSheet.src, 32, 32, {
+            'idle': { startFrame: 0, endFrame: 0 },
+            'walk': { startFrame: 0, endFrame: 0 },
+            'jump': { startFrame: 0, endFrame: 0 },
+            'attack': { startFrame: 0, endFrame: 0 },
+            'wallClimb': { startFrame: 0, endFrame: 0 }
+        });
     }
 
     handleMovement() {
