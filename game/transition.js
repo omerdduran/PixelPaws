@@ -7,10 +7,10 @@ class Transition {
         this.type = 'fade';
         this.direction = 1; // 1: in, -1: out
         
-        // Daha smooth bir easing fonksiyonu
+        // Cubic bezier easing fonksiyonu ile daha smooth bir geçiş
         this.easeFunction = t => {
             t = Math.max(0, Math.min(1, t));
-            return t * t * (3 - 2 * t); // Smooth step function
+            return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
         };
     }
 
@@ -38,6 +38,11 @@ class Transition {
     render() {
         if (!this.isActive) return;
 
+        // Tüm ekranı kapsayan bir siyah dikdörtgen çizeceğiz
+        overlayContext.save();
+        // En üstte render edilmesi için z-index benzeri bir etki
+        overlayContext.globalCompositeOperation = 'source-over';
+        
         const easedProgress = this.easeFunction(this.progress);
 
         switch(this.type) {
@@ -57,11 +62,14 @@ class Transition {
                 this.renderSpiral(easedProgress);
                 break;
         }
+        
+        overlayContext.restore();
     }
 
     renderFade(progress) {
+        // Tüm canvas'ı kaplayacak şekilde render et
         overlayContext.fillStyle = `rgba(0, 0, 0, ${progress})`;
-        overlayContext.fillRect(0, 0, mainCanvas.width, mainCanvas.height);
+        overlayContext.fillRect(0, 0, overlayContext.canvas.width, overlayContext.canvas.height);
     }
 
     renderCircle(progress) {

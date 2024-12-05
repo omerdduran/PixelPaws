@@ -12,6 +12,7 @@ class Portal extends EngineObject {
         this.timer = 0;
         this.isPlayerInside = false;
         this.portalEffect = 0;
+        this.isTransitioning = false;
 
         // Portal sprite properties
         this.sprite = new Image();
@@ -46,17 +47,25 @@ class Portal extends EngineObject {
                 if (!this.isPlayerInside) {
                     this.isPlayerInside = true;
                     this.timer = 5;
+                } else {
+                    // Timer'ı güncelle ama 0'ın altına düşmesini engelle
+                    this.timer = Math.max(0, this.timer - 1/60);
+                    
+                    // Timer 0'a ulaştığında geçiş efektini başlat
+                    if (this.timer <= 0 && !this.isTransitioning) {
+                        this.isTransitioning = true;
+                        // Önce fade-out efekti başlat, sonra yeni levele geç
+                        transition.start('fade', 0.5, () => {
+                            loadNextLevel();
+                        });
+                    }
                 }
             } else {
                 this.isPlayerInside = false;
-                this.timer = 5;
-            }
-        }
-
-        if (this.isPlayerInside) {
-            this.timer -= 1 / 60;
-            if (this.timer <= 0) {
-                loadNextLevel();
+                // Sadece aktif bir geçiş yoksa timer'ı resetle
+                if (!this.isTransitioning) {
+                    this.timer = 5;
+                }
             }
         }
     }
