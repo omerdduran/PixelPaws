@@ -13,6 +13,13 @@ class GameUI {
             coin: '#ffd700',
             highlight: '#ffff00'
         };
+
+        // Preload health bar images
+        this.healthBarBg = new Image();
+        this.healthBarFill = new Image();
+
+        this.healthBarBg.src = '../sprites/health_bar/health_bar_decoration.png'; // Update paths if necessary
+        this.healthBarFill.src = '../sprites/health_bar/health_bar.png';
     }
 
     render() {
@@ -35,45 +42,53 @@ class GameUI {
 
     drawPlayerInfo() {
         if (!currentPlayer) return;
-
+    
         const boxWidth = 250;
         const boxHeight = 120;
         const x = this.padding;
         const y = this.padding;
-
+    
         // Draw background panel with border
         this.drawPanel(x, y, boxWidth, boxHeight);
-
+    
         // Draw character name with icon
         overlayContext.font = 'bold 24px Arial';
         overlayContext.fillStyle = this.colors.text;
         overlayContext.textAlign = 'left';
         overlayContext.textBaseline = 'top';
-        overlayContext.fillText(`${currentPlayer.constructor.name}`, x + 15, y + 15);
-
-        // Draw health bar with border and gradient
+        overlayContext.fillText(`${currentPlayer.constructor.name}`, x + 5, y + 15);
+    
         const healthBarWidth = boxWidth - 30;
-        const healthBarHeight = 25;
+        const healthBarHeight = 35;
         const healthX = x + 15;
         const healthY = y + 45;
-
-        // Health bar border
-        overlayContext.strokeStyle = this.colors.healthBar.border;
-        overlayContext.lineWidth = 2;
-        overlayContext.strokeRect(healthX, healthY, healthBarWidth, healthBarHeight);
-
-        // Health bar background
-        overlayContext.fillStyle = this.colors.healthBar.background;
-        overlayContext.fillRect(healthX, healthY, healthBarWidth, healthBarHeight);
-
-        // Health bar fill with gradient
+    
+        // Slightly scale down the heart (background)
+        const heartScale = 0.5; // Scale down to 50% of the original size
+        const heartWidth = healthBarWidth * heartScale; 
+        const heartHeight = heartWidth / (this.healthBarBg.width / this.healthBarBg.height); // Maintain aspect ratio
+    
+        // Correct positioning of the heart background
+        const heartX = healthX - 10; // Align heart background with the health bar X position
+        const heartY = healthY - ((heartHeight - healthBarHeight) / 2); // Center vertically relative to the health bar
+    
+        // Draw the heart (health bar background)
+        overlayContext.drawImage(
+            this.healthBarBg,
+            0, 0, this.healthBarBg.width, this.healthBarBg.height, // Source dimensions
+            heartX, heartY, heartWidth, heartHeight // Destination dimensions
+        );
+    
+        // Calculate health percentage
         const healthPercent = currentPlayer.health / currentPlayer.maxHealth;
-        const gradient = overlayContext.createLinearGradient(healthX, healthY, healthX + healthBarWidth * healthPercent, healthY);
-        gradient.addColorStop(0, this.colors.healthBar.fill);
-        gradient.addColorStop(1, '#ff8888');
-        overlayContext.fillStyle = gradient;
-        overlayContext.fillRect(healthX, healthY, healthBarWidth * healthPercent, healthBarHeight);
-
+    
+        // Draw health bar fill
+        overlayContext.drawImage(
+            this.healthBarFill,
+            0, 0, this.healthBarFill.width * healthPercent, this.healthBarFill.height, // Crop fill image
+            healthX, healthY, healthBarWidth * healthPercent, healthBarHeight          // Scale to fit health percentage
+        );
+    
         // Draw health text
         overlayContext.font = 'bold 16px Arial';
         overlayContext.fillStyle = this.colors.text;
@@ -81,15 +96,15 @@ class GameUI {
         overlayContext.textBaseline = 'middle';
         overlayContext.fillText(
             `${Math.ceil(currentPlayer.health)} / ${currentPlayer.maxHealth}`,
-            healthX + healthBarWidth/2,
-            healthY + healthBarHeight/2 + 1
+            healthX + healthBarWidth / 2,
+            healthY + healthBarHeight / 2 + 1
         );
-
+    
         // Draw coins with icon
         overlayContext.font = 'bold 20px Arial';
         overlayContext.fillStyle = this.colors.coin;
         overlayContext.textAlign = 'left';
-        overlayContext.fillText(` ${currentPlayer.coins}`, x + 15, y + 85);
+        overlayContext.fillText(` ${currentPlayer.coins}`, x + 5, y + 95);
     }
 
     drawLevelInfo() {
