@@ -161,7 +161,7 @@ class BasePlayer extends EngineObject {
             
             overlayContext.translate(centerX, centerY);
             
-            if (this.velocity.x < 0) {
+            if (this.facingDirection < 0) {
                 overlayContext.scale(-1, 1);
             }
             
