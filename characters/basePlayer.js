@@ -233,6 +233,12 @@ class BasePlayer extends EngineObject {
         // Special ability control
         if (keyWasPressed('KeyQ') && this.specialAbilityCooldown <= 0) {
             this.useSpecialAbility();
+            this.specialAbilityCooldown = this.specialAbilityCooldownTime;
+        }
+
+        // Special ability cooldown güncellemesi
+        if (this.specialAbilityCooldown > 0) {
+            this.specialAbilityCooldown -= 1/60;
         }
     }
 

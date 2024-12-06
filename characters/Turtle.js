@@ -24,15 +24,19 @@ class Turtle extends BasePlayer {
         // Load additional character-specific sprite
         this.loadAdditionalSprite('shield');
         this.isShielding = false;
+        this.reverseShieldAnimation = false;
+        this.animationTimer = 0;
     }
 
     useSpecialAbility() {
         this.isShielding = true;
-        this.moveSpeed *= 0.5;
+        this.moveSpeed = 0;
         this.currentState = 'shield';
         this.frameIndex = 0;
+        this.animationTimer = 0;
         this.specialAbilityDuration = 3;
         this.specialAbilityCooldown = 8;
+        this.reverseShieldAnimation = false;
     }
 
     takeDamage(amount) {
@@ -45,11 +49,93 @@ class Turtle extends BasePlayer {
     update() {
         super.update();
         if (this.isShielding) {
-            this.specialAbilityDuration -= 1/60;
-            if (this.specialAbilityDuration <= 0) {
-                this.isShielding = false;
-                this.moveSpeed *= 2;  // Restore normal speed
+            this.velocity.x = 0;
+            this.velocity.y = 0;
+            
+            // Shield animasyonunu burada yönet
+            this.handleShieldAnimation();
+
+            // Süre kontrolü
+            if (!this.reverseShieldAnimation) {
+                this.specialAbilityDuration -= 1/60;
+                if (this.specialAbilityDuration <= 0) {
+                    this.reverseShieldAnimation = true;
+                }
             }
+        }
+    }
+
+    handleShieldAnimation() {
+        this.animationTimer += this.animationSpeed;
+        if (this.animationTimer >= 1) {
+            this.animationTimer = 0;
+            
+            if (!this.reverseShieldAnimation) {
+                // İleri animasyon
+                if (this.frameIndex < this.framesPerState.shield - 1) {
+                    this.frameIndex++;
+                }
+            } else {
+                // Geri animasyon
+                if (this.frameIndex > 0) {
+                    this.frameIndex--;
+                } else {
+                    // Geri animasyon bitti, normal duruma dön
+                    this.isShielding = false;
+                    this.moveSpeed = 0.12;
+                    this.currentState = 'idle';
+                    this.reverseShieldAnimation = false;
+                }
+            }
+        }
+    }
+
+    render() {
+        if (this.isShielding) {
+            // Shield durumunda özel render
+            const sprite = this.sprites['shield'];
+            if (sprite && sprite.complete && sprite.naturalWidth !== 0) {
+                const frameCount = this.framesPerState.shield;
+                const frameWidth = sprite.width / frameCount;
+                const frameHeight = sprite.height;
+                
+                const screenPos = worldToScreen(this.pos);
+                const scale = cameraScale * 2;
+                
+                overlayContext.save();
+                overlayContext.imageSmoothingEnabled = false;
+                
+                const centerX = Math.round(screenPos.x);
+                const centerY = Math.round(screenPos.y);
+                
+                const drawWidth = Math.round(scale * this.spriteScale.x);
+                const drawHeight = Math.round(scale * this.spriteScale.y);
+                
+                const drawX = centerX - drawWidth / 2;
+                const verticalOffset = this.size.y * 1.5 * cameraScale;
+                const drawY = centerY - drawHeight / 2 + verticalOffset;
+                
+                const frameX = Math.floor(this.frameIndex) * frameWidth;
+                
+                overlayContext.translate(centerX, centerY);
+                
+                if (this.facingDirection < 0) {
+                    overlayContext.scale(-1, 1);
+                }
+                
+                overlayContext.drawImage(
+                    sprite,
+                    frameX, 0,
+                    frameWidth, frameHeight,
+                    -drawWidth/2, -drawHeight/this.spriteYOffset,
+                    drawWidth, drawHeight
+                );
+                
+                overlayContext.restore();
+            }
+        } else {
+            // Normal render
+            super.render();
         }
     }
 } 
