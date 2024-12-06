@@ -49,6 +49,10 @@ class BasePlayer extends EngineObject {
             'die': 0
         };
 
+        // Sprite properties
+        this.spriteScale = vec2(1, 1);  // Varsayılan sprite ölçeği
+        this.spriteYOffset = 1.3;       // Varsayılan Y offset
+        
         // Load sprites if character type is provided
         if (this.characterType) {
             this.loadSprites();
@@ -143,13 +147,14 @@ class BasePlayer extends EngineObject {
             const centerX = Math.round(screenPos.x);
             const centerY = Math.round(screenPos.y);
             
-            // Sprite'ın boyutlarını hesapla
-            const drawWidth = Math.round(scale);
-            const drawHeight = Math.round(scale);
+            // Sprite'ın boyutlarını hesapla (spriteScale ile güncellendi)
+            const drawWidth = Math.round(scale * this.spriteScale.x);
+            const drawHeight = Math.round(scale * this.spriteScale.y);
             
             // Sprite'ın çizim pozisyonunu hesapla
             const drawX = centerX - drawWidth / 2;
-            const drawY = centerY - drawHeight / 2;
+            const verticalOffset = this.size.y * 1.5 * cameraScale;
+            const drawY = centerY - drawHeight / 2 + verticalOffset;
             
             // Frame indeksini tam sayıya yuvarla
             const frameX = Math.floor(this.frameIndex) * frameWidth;
@@ -165,8 +170,8 @@ class BasePlayer extends EngineObject {
                     sprite,
                     frameX, 0,                    // Source X, Y
                     frameWidth, frameHeight,      // Source Width, Height
-                    -drawWidth/2, -drawHeight/2,  // Destination X, Y
-                    drawWidth, drawHeight         // Destination Width, Height
+                    -drawWidth/2, -drawHeight/this.spriteYOffset,  // Destination X, Y
+                    drawWidth, drawHeight         // Destination Width, Height (spriteScale ile güncellendi)
                 );
             } catch (error) {
                 console.error('Error drawing sprite:', error);

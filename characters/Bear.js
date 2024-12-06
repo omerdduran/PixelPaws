@@ -6,7 +6,10 @@ class Bear extends BasePlayer {
             attackDamage: 30,
             attackRange: 2,
             attackCooldownTime: 0.7
-        }, 'bear', vec2(2, 2));
+        }, 'bear', vec2(4, 1.9));
+
+        this.spriteYOffset = 1.3;
+        this.spriteScale = vec2(2, 2);
 
         this.framesPerState = {
             ...this.framesPerState,

@@ -4,12 +4,14 @@ class Parrot extends BasePlayer {
             maxHealth: 70,       // Lowest health
             moveSpeed: 0.25,
             gravityScale: 0.7    // Floaty
-        }, "parrot", vec2(1.5, 1.5));
+        }, "parrot", vec2(1, 1));
         this.flyEnergy = 100;
 
         // Load additional character-specific sprite
         this.loadAdditionalSprite('fly');
         this.isFlying = false;
+        this.spriteYOffset = 2;
+        this.spriteScale = vec2(0.5, 0.5);
 
         this.framesPerState = {
             ...this.framesPerState,

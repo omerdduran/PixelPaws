@@ -5,11 +5,13 @@ class Bunny extends BasePlayer {
             moveSpeed: 0.3,
             jumpPower: 0.6,
             attackDamage: 15
-        }, 'bunny', vec2(1.3, 1.3));
+        }, 'bunny', vec2(1.3, 1.1));
 
         // Load additional character-specific sprite
         this.loadAdditionalSprite('doubleJump');
         this.doubleJumpAvailable = true;
+
+        this.spriteYOffset = 1.9;
 
         this.framesPerState = {
             'idle': 8,

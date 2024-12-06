@@ -8,6 +8,8 @@ class Dog extends BasePlayer {
 
         // Load additional character-specific sprite
         this.loadAdditionalSprite('bark');
+        this.spriteYOffset = 1.3;
+        this.spriteScale = vec2(2.3, 2.3);
 
         this.framesPerState = {
             ...this.framesPerState,

@@ -5,7 +5,10 @@ class Turtle extends BasePlayer {
             moveSpeed: 0.12,
             attackDamage: 15,
             attackRange: 1.2
-        }, 'turtle', vec2(1.8, 1.4));
+        }, 'turtle', vec2(1.8, 1.2));
+    
+        this.spriteYOffset = 1.3;
+        this.spriteScale = vec2(1.3, 1.3);
 
         this.framesPerState = {
             ...this.framesPerState,

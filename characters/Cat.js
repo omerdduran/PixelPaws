@@ -4,10 +4,13 @@ class Cat extends BasePlayer {
           maxHealth: 90,
           moveSpeed: 0.25,
           attackCooldownTime: 0.3
-      }, 'cat', vec2(2, 2));
+      }, 'cat', vec2(2, 1.5));
       this.specialAbilityCooldown = 0; // Initialize cooldown
       this.jumpPower = 5; // Set a jump power value
       this.touchingWall = false; // Initialize wall touching state
+      
+      this.spriteYOffset = 1.8;
+      this.spriteScale = vec2(1.2, 1.2);
 
       this.framesPerState = {
         ...this.framesPerState,
