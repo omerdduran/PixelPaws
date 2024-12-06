@@ -1,4 +1,6 @@
 class BasePlayer extends EngineObject {
+    static totalCoins = 0;
+
     constructor(pos, color, stats = {}, characterType = '', size = vec2(1.5, 1.5)) {
         super(pos, size, undefined, 0, color);
         
@@ -18,7 +20,7 @@ class BasePlayer extends EngineObject {
         this.wasGrounded = true;
         this.maxFallSpeed = 0;
         this.isActive = false;
-        this.coins = 0;
+        this.coins = BasePlayer.totalCoins;
         this.isAttacking = false;
         this.attackCooldown = 0;
         this.attackDuration = 0.2;
@@ -184,8 +186,9 @@ class BasePlayer extends EngineObject {
     }
 
     addCoin() {
-        this.coins++;
-        console.log('Coins collected:', this.coins);
+        BasePlayer.totalCoins++;
+        this.coins = BasePlayer.totalCoins;
+        console.log('Coins collected:', BasePlayer.totalCoins);
     }
 
     update() {
