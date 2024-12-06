@@ -1,7 +1,7 @@
 'use strict';
 
 let gameScale = 25;
-let worldSize = vec2(32, 32);
+let worldSize = vec2(200, 32);
 
 let currentLevel = 0;
 let activePlayerIndex = 0;
@@ -283,8 +283,8 @@ function gameRender() {
                 const currentLevel = levelManager.levels[levelManager.currentLevelIndex];
                 currentLevel.platforms.forEach(p => {
                     drawRect(
-                        vec2(p.pos.x + p.size.x/2, p.pos.y + p.size.y/2),
-                        p.size,
+                        vec2(p.pos.x + p.size.x/2, p.pos.y + 0.5),
+                        vec2(p.size.x, 1),
                         p.color || new Color(.5, .3, .2)
                     );
                 });

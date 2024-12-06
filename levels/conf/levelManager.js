@@ -21,8 +21,9 @@ class LevelManager {
         // Create platforms
         level.platforms.forEach(p => {
             for (let x = 0; x < p.size.x; x++) {
-                for (let y = 0; y < p.size.y; y++) {
-                    setTileCollisionData(vec2(p.pos.x + x, p.pos.y + y), 1);
+                if (p.pos.x + x >= 0 && p.pos.x + x < worldSize.x && 
+                    p.pos.y >= 0 && p.pos.y < worldSize.y) {
+                    setTileCollisionData(vec2(p.pos.x + x, p.pos.y), 1);
                 }
             }
         });

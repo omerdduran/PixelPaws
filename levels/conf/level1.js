@@ -1,7 +1,7 @@
 const level1 = {
     // Platform configurations
     platforms: [
-        {pos: vec2(0,0), size: vec2(40,1), color: new Color(0.4, 0.3, 0.9)},    // ground
+        {pos: vec2(0,0), size: vec2(200,1), color: new Color(0.4, 0.3, 0.9)},    // ground
         {pos: vec2(4,3), size: vec2(3,1), color: new Color(0.8, 0.5, 0.2)},     // platforms
         {pos: vec2(8,6), size: vec2(3,1), color: new Color(0.8, 0.5, 0.2)},
         {pos: vec2(12,9), size: vec2(3,1), color: new Color(0.8, 0.5, 0.2)},
