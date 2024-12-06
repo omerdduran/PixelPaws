@@ -65,8 +65,13 @@ class Parrot extends BasePlayer {
     }
 
     render() {
-        // Önce currentState'i güncelle
-        if (!this.isFlying) {
+        // Önce hasar durumunu kontrol et
+        if (Date.now() - this.lastDamageTime < 500) {
+            this.currentState = 'hurt';
+            this.idleTimer = 0;
+        }
+        // Değilse diğer durumları kontrol et
+        else if (!this.isFlying) {
             if (this.isAttacking) {
                 this.currentState = 'attack';
             } else if (!this.groundObject) {

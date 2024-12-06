@@ -102,38 +102,40 @@ class BasePlayer extends EngineObject {
         // Determine current state
         let newState = 'idle';
         
-        // Hareket var mı kontrol edelim
-        const isMoving = Math.abs(this.velocity.x) > 0.01 || 
-                         !this.groundObject || 
-                         this.isAttacking ||
-                         keyIsDown('ArrowRight') || 
-                         keyIsDown('ArrowLeft') || 
-                         keyIsDown('KeyW') || 
-                         keyIsDown('Space');
-
-        if (isMoving) {
-            this.idleTimer = 0; // Hareket varsa sayacı sıfırla
-            
-            if (this.isAttacking) {
-                newState = 'attack';
-            } else if (Math.abs(this.velocity.x) > 0.01) {
-                newState = 'run';
-            } else if (!this.groundObject) {
-                newState = 'jump';
-            }
-        } else {
-            // Hareket yoksa sayacı artır
-            this.idleTimer += 1/60; // Her frame'de 1/60 saniye ekle
-            
-            if (this.idleTimer >= this.idleTimeToSleep) {
-                newState = 'sleep';
-            }
-        }
-
-        // If taking damage, briefly show hurt sprite
-        if (this.lastDamageTime > Date.now() - 200) {
+        // Önce hasar durumunu kontrol et - süreyi artıralım
+        if (Date.now() - this.lastDamageTime < 500) { // 200ms'den 500ms'e çıkardık
             newState = 'hurt';
-            this.idleTimer = 0; // Hasar alınca sayacı sıfırla
+            this.idleTimer = 0;
+        } 
+        // Eğer hurt değilse diğer durumları kontrol et
+        else {
+            // Hareket var mı kontrol edelim
+            const isMoving = Math.abs(this.velocity.x) > 0.01 || 
+                            !this.groundObject || 
+                            this.isAttacking ||
+                            keyIsDown('ArrowRight') || 
+                            keyIsDown('ArrowLeft') || 
+                            keyIsDown('KeyW') || 
+                            keyIsDown('Space');
+
+            if (isMoving) {
+                this.idleTimer = 0; // Hareket varsa sayacı sıfırla
+                
+                if (this.isAttacking) {
+                    newState = 'attack';
+                } else if (Math.abs(this.velocity.x) > 0.01) {
+                    newState = 'run';
+                } else if (!this.groundObject) {
+                    newState = 'jump';
+                }
+            } else {
+                // Hareket yoksa sayacı artır
+                this.idleTimer += 1/60; // Her frame'de 1/60 saniye ekle
+                
+                if (this.idleTimer >= this.idleTimeToSleep) {
+                    newState = 'sleep';
+                }
+            }
         }
 
         // State change handling with smooth transitions
@@ -144,11 +146,6 @@ class BasePlayer extends EngineObject {
                 instantTransitions.includes(this.currentState)) {
                 this.frameIndex = 0;
                 this.animationTimer = 0;
-            } else {
-                // Diğer durumlarda mevcut frame'i tamamla
-                if (this.animationTimer < 0.5) {
-                    newState = this.currentState;
-                }
             }
             this.currentState = newState;
         }
@@ -292,13 +289,17 @@ class BasePlayer extends EngineObject {
 
         if (currentTime - this.lastDamageTime >= this.damageCooldown) {
             this.health = Math.max(0, this.health - amount);
+            this.lastDamageTime = currentTime;
+            
+            // Hurt durumuna geçiş için state'i zorla değiştir
+            this.currentState = 'hurt';
+            this.frameIndex = 0;
+            this.animationTimer = 0;
 
             if (this.health <= 0) {
                 this.health = this.maxHealth;
                 levelManager.loadLevel(levelManager.currentLevelIndex);
             }
-
-            this.lastDamageTime = currentTime;
         }
     }
 
@@ -335,7 +336,12 @@ class BasePlayer extends EngineObject {
 
     // Update animation frame with precise timing
     updateAnimation() {
-        this.animationTimer += this.animationSpeed;
+        // Hurt animasyonu için özel hız ayarı
+        const currentSpeed = this.currentState === 'hurt' ? 
+            this.animationSpeed * 1.5 : // Hurt animasyonunu biraz hızlandır
+            this.animationSpeed;
+        
+        this.animationTimer += currentSpeed;
         if (this.animationTimer >= 1) {
             this.animationTimer = 0;
             const maxFrames = this.framesPerState[this.currentState] || 4;
