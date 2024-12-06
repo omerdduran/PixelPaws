@@ -19,7 +19,8 @@ class Bunny extends BasePlayer {
             'attack': 7,
             'jump': 11,
             'hurt': 3,
-            'die': 9
+            'die': 9,
+            'sleep': 2
         };
     }
 

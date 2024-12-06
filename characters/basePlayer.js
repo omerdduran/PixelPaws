@@ -48,7 +48,8 @@ class BasePlayer extends EngineObject {
             'attack': 0,
             'jump': 0,
             'hurt': 0,
-            'die': 0
+            'die': 0,
+            'sleep': 0
         };
 
         // Sprite properties
@@ -59,11 +60,15 @@ class BasePlayer extends EngineObject {
         if (this.characterType) {
             this.loadSprites();
         }
+
+        // Idle durumu için sayaç ekleyelim
+        this.idleTimer = 0;
+        this.idleTimeToSleep = 3; // 3 saniye hareketsiz kalınca sleep'e geçecek
     }
 
     loadSprites() {
         // Define base sprite states that all characters share
-        const baseStates = ['idle', 'run', 'attack', 'jump', 'hurt', 'die'];
+        const baseStates = ['idle', 'run', 'attack', 'jump', 'hurt', 'die', 'sleep'];
         
         // Load each sprite
         baseStates.forEach(state => {
@@ -97,17 +102,38 @@ class BasePlayer extends EngineObject {
         // Determine current state
         let newState = 'idle';
         
-        if (this.isAttacking) {
-            newState = 'attack';
-        } else if (Math.abs(this.velocity.x) > 0.01) {
-            newState = 'run';
-        } else if (!this.groundObject) {
-            newState = 'jump';
+        // Hareket var mı kontrol edelim
+        const isMoving = Math.abs(this.velocity.x) > 0.01 || 
+                         !this.groundObject || 
+                         this.isAttacking ||
+                         keyIsDown('ArrowRight') || 
+                         keyIsDown('ArrowLeft') || 
+                         keyIsDown('KeyW') || 
+                         keyIsDown('Space');
+
+        if (isMoving) {
+            this.idleTimer = 0; // Hareket varsa sayacı sıfırla
+            
+            if (this.isAttacking) {
+                newState = 'attack';
+            } else if (Math.abs(this.velocity.x) > 0.01) {
+                newState = 'run';
+            } else if (!this.groundObject) {
+                newState = 'jump';
+            }
+        } else {
+            // Hareket yoksa sayacı artır
+            this.idleTimer += 1/60; // Her frame'de 1/60 saniye ekle
+            
+            if (this.idleTimer >= this.idleTimeToSleep) {
+                newState = 'sleep';
+            }
         }
 
         // If taking damage, briefly show hurt sprite
         if (this.lastDamageTime > Date.now() - 200) {
             newState = 'hurt';
+            this.idleTimer = 0; // Hasar alınca sayacı sıfırla
         }
 
         // State change handling with smooth transitions

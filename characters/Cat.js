@@ -19,7 +19,8 @@ class Cat extends BasePlayer {
         'attack': 9,
         'jump': 13,
         'hurt': 7,
-        'die': 15
+        'die': 15,
+        'sleep': 3
     };
   }
 

@@ -27,7 +27,8 @@ class Parrot extends BasePlayer {
             'jump': 8,
             'hurt': 12,
             'die': 10,
-            'fly': 8
+            'fly': 8,
+            'sleep': 8
         };
     }
 

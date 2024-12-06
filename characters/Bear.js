@@ -18,7 +18,8 @@ class Bear extends BasePlayer {
             'attack': 7,
             'jump': 11,
             'hurt': 10,
-            'die': 12
+            'die': 12,
+            'sleep': 8
         };
 
         

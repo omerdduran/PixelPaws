@@ -19,7 +19,8 @@ class Dog extends BasePlayer {
             'jump': 13,
             'hurt': 15,
             'die': 11,
-            'bark': 12
+            'bark': 12,
+            'sleep': 8
         };
     }
 

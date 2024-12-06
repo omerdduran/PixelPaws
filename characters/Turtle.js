@@ -18,7 +18,8 @@ class Turtle extends BasePlayer {
             'jump': 14,
             'hurt': 12,
             'die': 10,
-            'shield': 13
+            'shield': 13,
+            'sleep': 12
         };
 
         // Load additional character-specific sprite
