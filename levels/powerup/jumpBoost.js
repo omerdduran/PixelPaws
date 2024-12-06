@@ -1,10 +1,7 @@
 class JumpBoost extends BasePowerUp {
     constructor(pos) {
-        super(pos, new Color(1, 0.5, 0), 7); // Orange color, 7 seconds duration
-        this.jumpMultiplier = 1.5;
-        this.framesPerRow = 1
-        this.totalFrames = 1
-    }
+        super(pos, 3, false); // 3 saniye süreli, normal resim kullanan powerup
+    }s
 
     applyEffect() {
         const originalJump = currentPlayer.jumpPower;
