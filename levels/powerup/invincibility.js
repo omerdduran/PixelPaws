@@ -1,20 +1,26 @@
 class Invincibility extends BasePowerUp {
     constructor(pos) {
-        super(pos, 3, false); // 3 saniye süreli, normal resim kullanan powerup
+        super(pos, 3, false); // 3 seconds duration
     }
 
     applyEffect() {
-        const originalDamage = currentPlayer.takeDamage;
-        currentPlayer.takeDamage = () => {}; // No damage
-        
-        // Visual effect
+        if (!currentPlayer) {
+            console.error('No current player found to apply the Invincibility effect.');
+            return;
+        }        
+
+        // Make the player invincible
+        currentPlayer.canTakeDamage = false;
+
+        // Apply visual effect
         currentPlayer.color = new Color(1, 1, 1);
-        
+
+        // Revert invincibility after the duration
         setTimeout(() => {
             if (currentPlayer) {
-                currentPlayer.takeDamage = originalDamage;
+                currentPlayer.canTakeDamage = true;
                 currentPlayer.color = currentPlayer.constructor.defaultColor;
             }
         }, this.duration * 1000);
     }
-} 
+}

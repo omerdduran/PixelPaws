@@ -27,6 +27,7 @@ class BasePlayer extends EngineObject {
         this.facingDirection = 1;
         this.lastDamageTime = 0;
         this.damageCooldown = 2000;
+        this.canTakeDamage = true;
 
         // Special ability properties
         this.specialAbilityCooldown = 0;
@@ -287,18 +288,26 @@ class BasePlayer extends EngineObject {
     takeDamage(amount) {
         const currentTime = Date.now();
 
+        // Prevent damage if the player is invincible
+        if (!this.canTakeDamage) {
+            console.log('Player is invincible, no damage taken.');
+            return;
+        }
+
+        // Ensure damage cooldown is respected
         if (currentTime - this.lastDamageTime >= this.damageCooldown) {
             this.health = Math.max(0, this.health - amount);
             this.lastDamageTime = currentTime;
-            
-            // Hurt durumuna geçiş için state'i zorla değiştir
+
+            // Hurt animation
             this.currentState = 'hurt';
             this.frameIndex = 0;
             this.animationTimer = 0;
 
+            // Handle player death
             if (this.health <= 0) {
-                this.health = this.maxHealth;
-                levelManager.loadLevel(levelManager.currentLevelIndex);
+                this.health = this.maxHealth; // Reset health
+                levelManager.loadLevel(levelManager.currentLevelIndex); // Restart level
             }
         }
     }
