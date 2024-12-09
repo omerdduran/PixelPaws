@@ -36,6 +36,25 @@ let transition;
 // Sprite sheets konfigürasyonunu kaldır
 const spriteSheets = []; // Boş array bırakalım, çünkü engineInit bir array bekliyor
 
+// Global değişken olarak ekleyin
+let customCursor;
+
+// DOMContentLoaded event listener ekleyin
+document.addEventListener('DOMContentLoaded', () => {
+    customCursor = document.getElementById('customCursor');
+    if (customCursor) {  // customCursor'un bulunduğundan emin ol
+        document.addEventListener('mousemove', (e) => {
+            if (gameState !== 'playing' && customCursor) {
+                customCursor.style.display = 'block';
+                customCursor.style.left = (e.clientX - 16) + 'px';
+                customCursor.style.top = (e.clientY - 16) + 'px';
+            } else if (customCursor) {
+                customCursor.style.display = 'none';
+            }
+        });
+    }
+});
+
 function gameInit() {
     cameraScale = gameScale;
     gravity = -0.02;
@@ -208,6 +227,19 @@ function switchPlayer() {
 
 
 function gameUpdate() {
+    // Önce customCursor'un var olup olmadığını kontrol et
+    if (customCursor) {
+        if (gameState === 'playing') {
+            document.body.style.cursor = 'none';
+            mainCanvas.style.cursor = 'none';
+            customCursor.style.display = 'none';
+        } else {
+            document.body.style.cursor = 'none';  // Her zaman varsayılan cursor'u gizle
+            mainCanvas.style.cursor = 'none';
+            customCursor.style.display = 'block';
+        }
+    }
+    
     transition.update();
     
     if (gameState === 'start') {
