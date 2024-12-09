@@ -1,6 +1,6 @@
 class DoubleDamage extends BasePowerUp {
     constructor(pos) {
-        super(pos, new Color(1, 0, 0), 10); // Red color, 10 seconds duration
+        super(pos, 10); // 10 seconds duration
     }
 
     applyEffect() {

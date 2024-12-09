@@ -1,6 +1,6 @@
 class MagneticField extends BasePowerUp {
     constructor(pos) {
-        super(pos, new Color(0.7, 0, 1), 8); // Purple color, 8 seconds duration
+        super(pos, 8); // 8 seconds duration
         this.radius = 5;
     }
 
