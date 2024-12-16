@@ -1,6 +1,6 @@
 class LevelManager {
     constructor() {
-        this.levels = [level1, level2];
+        this.levels = [level1, level2, level3, level4, level5];
         this.currentLevelIndex = 0;
     }
 

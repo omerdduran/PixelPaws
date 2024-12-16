@@ -1,7 +1,7 @@
 class JumpBoost extends BasePowerUp {
     constructor(pos) {
         super(pos, 3, false); // 3-second duration
-        this.jumpMultiplier = 1.5; // Set a reasonable multiplier
+        this.jumpMultiplier = 1.2; // Set a reasonable multiplier
     }
 
     applyEffect() {
@@ -17,14 +17,20 @@ class JumpBoost extends BasePowerUp {
         }
 
         const originalJump = currentPlayer.jumpPower;
-        currentPlayer.jumpPower *= this.jumpMultiplier;
+        const originalFallDamage = currentPlayer.canTakeFallDamage;
 
-        console.log(`JumpBoost applied: new jumpPower = ${currentPlayer.jumpPower}`);
+        // Boost jump power and disable fall damage
+        currentPlayer.jumpPower *= this.jumpMultiplier;
+        currentPlayer.canTakeDamage = false;
+
+        console.log(`JumpBoost applied: new jumpPower = ${currentPlayer.jumpPower}, fall damage disabled.`);
 
         setTimeout(() => {
             if (currentPlayer) {
+                // Restore original jump power and re-enable fall damage
                 currentPlayer.jumpPower = originalJump;
-                console.log(`JumpBoost expired: restored jumpPower = ${currentPlayer.jumpPower}`);
+                currentPlayer.canTakeDamage = true;
+                console.log(`JumpBoost expired: restored jumpPower = ${currentPlayer.jumpPower}, fall damage re-enabled.`);
             }
         }, this.duration * 1000);
     }

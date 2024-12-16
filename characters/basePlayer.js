@@ -52,6 +52,7 @@ class BasePlayer extends EngineObject {
             'die': 0,
             'sleep': 0
         };
+        this.switchesLeft = 5;
 
         // Sprite properties
         this.spriteScale = vec2(1, 1);  // Varsayılan sprite ölçeği

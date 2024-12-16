@@ -1,4 +1,4 @@
-const level2 = {
+const level5 = {
     // Platform configurations
     platforms: [
         {pos: vec2(0,0), size: vec2(30,1), color: new Color(0.3, 0.2, 0.8)},

@@ -105,6 +105,11 @@ class GameUI {
         overlayContext.fillStyle = this.colors.coin;
         overlayContext.textAlign = 'left';
         overlayContext.fillText(` ${currentPlayer.coins}`, x + 5, y + 95);
+
+        overlayContext.font = 'bold 20px Arial';
+        overlayContext.fillStyle = '#FFFFFF'
+        overlayContext.textAlign = 'right';
+        overlayContext.fillText(`Switches: ${currentPlayer.switchesLeft}`, x + 230, y + 95);
     }
 
     drawLevelInfo() {

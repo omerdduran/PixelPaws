@@ -90,6 +90,9 @@ function loadNextLevel() {
                 console.log(`${unlockedCharacter.name} has been unlocked!`);
             }
 
+            currentPlayer.switchesLeft += 5;
+            console.log("Added 5 switches to the player")
+
             background = new ParallaxBackground(mainCanvas, {
                 get x() { return cameraPos.x },
                 get y() { return cameraPos.y }
@@ -201,8 +204,15 @@ function drawMenuBackground() {
 function switchPlayer() {
     if (!currentPlayer) return;
 
+    if (currentPlayer.switchesLeft == 0) {
+        console.error("No switch left")
+        return
+    }
+
+    const oldSwitchesLeft = currentPlayer.switchesLeft;
+
     const pos = currentPlayer.pos;
-    const health = currentPlayer.health;
+    const damageTaken = currentPlayer.maxHealth - currentPlayer.health;
 
     // Destroy the current player
     currentPlayer.destroy();
@@ -216,9 +226,17 @@ function switchPlayer() {
     const newPos = pos.add(airborneOffset);
 
     currentPlayer = new CharacterClass(newPos);
+    
+    currentPlayer.switchesLeft = oldSwitchesLeft - 1
+    console.log("Switches left: ", currentPlayer.switchesLeft)
 
     // Carry over health and activate the new player
-    currentPlayer.health = health;
+    const newHealth = currentPlayer.maxHealth - damageTaken;
+    if (newHealth <= 0) {
+        currentPlayer.health = 30;
+    } else {
+        currentPlayer.health = newHealth;
+    }
     currentPlayer.isActive = true;
 
     console.log('Transformed to:', CharacterClass.name);
