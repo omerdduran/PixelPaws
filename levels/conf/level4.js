@@ -30,9 +30,9 @@ const level4 = {
         
         enemies: [
             {pos: vec2(12,1), distance: 5},
-            {pos: vec2(20,6), distance: 3},
-            {pos: vec2(34,14), distance: 4},
-            {pos: vec2(38,18), distance: 2},
+            {pos: vec2(18,7), distance: 3},
+            {pos: vec2(35,15), distance: 4},
+            {pos: vec2(38,19), distance: 2},
         ],
         
         
@@ -44,8 +44,8 @@ const level4 = {
         
         movingPlatforms: [
             {pos: vec2(12,5), distance: 5, vertical: true},
-            {pos: vec2(22,9), distance: 4, vertical: false},
-            {pos: vec2(35,16), distance: 3, vertical: true},
+            {pos: vec2(22,8), distance: 4, vertical: false},
+            {pos: vec2(35,16), distance: 6, vertical: true},
         ],
         
         powerUps: [

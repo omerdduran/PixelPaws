@@ -1,70 +1,104 @@
 const level2 = {
-    // Platform configurations
     platforms: [
-        {pos: vec2(0,0), size: vec2(30,1), color: new Color(0.3, 0.2, 0.8)},
-        {pos: vec2(8,3), size: vec2(4,1), color: new Color(0.7, 0.5, 0.2)},
-        {pos: vec2(16,6), size: vec2(3,1), color: new Color(0.8, 0.3, 0.2)},
-        {pos: vec2(23,10), size: vec2(6,1), color: new Color(0.5, 0.7, 0.3)},
-        {pos: vec2(32,14), size: vec2(3,1), color: new Color(0.9, 0.2, 0.5)},
-        {pos: vec2(38,18), size: vec2(2,1), color: new Color(0.4, 0.6, 0.9)},
+        // Ana zemin platformları
+        {pos: vec2(0,0), size: vec2(20,1), color: new Color(0.3, 0.2, 0.8)},
+        // {pos: vec2(30,0), size: vec2(20,1), color: new Color(0.3, 0.2, 0.8)},
+        {pos: vec2(60,0), size: vec2(20,1), color: new Color(0.3, 0.2, 0.8)},
+        
+        // Alt yol platformları (daha geniş aralıklarla)
+        {pos: vec2(15,5), size: vec2(6,1), color: new Color(0.7, 0.5, 0.2)},
+        {pos: vec2(35,8), size: vec2(8,1), color: new Color(0.8, 0.3, 0.2)},
+        {pos: vec2(55,11), size: vec2(5,1), color: new Color(0.5, 0.7, 0.3)},
+        
+        // Üst yol platformları (daha yüksek ve geniş aralıklarla)
+        {pos: vec2(20,10), size: vec2(6,1), color: new Color(0.7, 0.5, 0.2)},
+        {pos: vec2(40,15), size: vec2(7,1), color: new Color(0.8, 0.3, 0.2)},
+        {pos: vec2(60,20), size: vec2(5,1), color: new Color(0.5, 0.7, 0.3)},
+        
+        // Ortak bitiş platformu (daha yüksekte)
+        {pos: vec2(75,17), size: vec2(8,1), color: new Color(0.9, 0.2, 0.5)},
     ],
 
-    // Level specific data
     data: {
-        startPosition: vec2(2, 5),
-        portalPosition: vec2(39, 20),
-        backgroundColor: new Color(0.1, 0.2, 0.3),  // Dark navy for a mysterious vibe
-        difficulty: 4,
-        name: "The Marathon"
+        startPosition: vec2(2, 2),
+        portalPosition: vec2(78, 19),
+        backgroundColor: new Color(0.1, 0.2, 0.3),
+        difficulty: 7,
+        name: "The Distant Paths"
     },
 
-    // Collectibles and obstacles
     objects: {
         coins: [
-            vec2(10,4), 
-            vec2(17,7), 
-            vec2(25,11), 
-            vec2(33,15), 
-            vec2(38,19),
+            // Alt yol coinleri
+            vec2(16,6), 
+            vec2(36,9), 
+            vec2(56,12),
+            
+            // Üst yol coinleri 
+            vec2(21,11),
+            vec2(41,16),
+            vec2(61,21),
+            
+            // Ortak alan coinleri
+            vec2(76,18),
+            vec2(78,18)
         ],
         
         enemies: [
-            {pos: vec2(12,1), distance: 5},
-            {pos: vec2(20,6), distance: 3},
-            {pos: vec2(34,14), distance: 4},
-            {pos: vec2(38,18), distance: 2},
+            // Sabit platformlardaki düşmanlar
+            {pos: vec2(18,6), distance: 3},  // İlk alt yol platformunda
+            {pos: vec2(38,9), distance: 4},  // İkinci alt yol platformunda
+            {pos: vec2(57,12), distance: 3}, // Üçüncü alt yol platformunda
+            
+            {pos: vec2(22,11), distance: 3}, // İlk üst yol platformunda
+            {pos: vec2(42,16), distance: 4}, // İkinci üst yol platformunda
+            {pos: vec2(62,21), distance: 3}  // Üçüncü üst yol platformunda
         ],
         
-        
         healthPacks: [
-            vec2(9,4),
-            vec2(26,11),
-            vec2(36,18),
+            // Alt yol health pack'leri
+            vec2(18,6),
+            vec2(58,12),
+            
+            // Üst yol health pack'leri
+            vec2(23,11),
+            vec2(63,21)
         ],
         
         movingPlatforms: [
-            {pos: vec2(12,5), distance: 5, vertical: true},
-            {pos: vec2(22,9), distance: 4, vertical: false},
-            {pos: vec2(35,16), distance: 3, vertical: true},
+            // Alt yol dikey platformları
+            {pos: vec2(25,6), distance: 4, vertical: true},
+            {pos: vec2(45,9), distance: 5, vertical: true},
+            
+            // Üst yol dikey platformları
+            {pos: vec2(30,12), distance: 5, vertical: true},
+            {pos: vec2(50,17), distance: 4, vertical: true},
+            
+            // Yatay platformlar
+            {pos: vec2(35,7), distance: 6, vertical: false},
+            {pos: vec2(55,16), distance: 5, vertical: false}
         ],
         
         powerUps: [
-            { type: SpeedBoost, pos: vec2(7, 3) },
-            { type: Invincibility, pos: vec2(24, 11) },
-            { type: JumpBoost, pos: vec2(31, 14) },
-        ],
+            // Alt yoldaki power-up'lar
+            { type: SpeedBoost, pos: vec2(37,9) },
+            { type: JumpBoost, pos: vec2(57,12) },
+            
+            // Üst yoldaki power-up'lar
+            { type: Invincibility, pos: vec2(42,16) },
+            { type: SpeedBoost, pos: vec2(62,21) }
+        ]
     },
 
-    // Level specific events or triggers
     events: {
         onStart: () => {
-            console.log("The Marathon begins. Stay focused!");
+            console.log("Choose your path wisely! The gaps are treacherous!");
         },
         onComplete: () => {
-            console.log("Congratulations! You conquered The Marathon!");
+            console.log("Incredible! You've conquered The Distant Paths!");
         },
         onCoinCollect: (coinPos) => {
-            console.log(`Shiny coin collected at ${coinPos}!`);
+            console.log(`Coin collected at ${coinPos}!`);
         },
         onEnemyDefeat: (enemyPos) => {
             console.log(`Enemy defeated at position ${enemyPos}.`);

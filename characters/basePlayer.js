@@ -17,6 +17,7 @@ class BasePlayer extends EngineObject {
         this.setCollision(true);
         this.health = this.maxHealth;
         this.fallDamageThreshold = 0.4;
+        this.fallDamageConstant = 1;
         this.wasGrounded = true;
         this.maxFallSpeed = 0;
         this.isActive = false;
@@ -275,7 +276,7 @@ class BasePlayer extends EngineObject {
             if (Math.abs(this.maxFallSpeed) > this.fallDamageThreshold) {
                 const damage = Math.floor(Math.abs(this.maxFallSpeed) * 100);
                 console.log('Fall damage:', damage, 'Fall speed:', this.maxFallSpeed);
-                this.takeDamage(damage);
+                this.takeDamage(damage * this.fallDamageConstant);
             }
             this.wasGrounded = true;
             this.maxFallSpeed = 0;
@@ -321,7 +322,7 @@ class BasePlayer extends EngineObject {
             const attackPos = this.pos.add(vec2(this.facingDirection * this.attackRange / 2, 0));
             engineObjects.forEach(obj => {
                 if (obj instanceof Enemy && obj.pos.distance(attackPos) < this.attackRange) {
-                    obj.destroy();
+                    obj.takeDamage(this.attackDamage);
                 }
             });
             this.attackDuration -= 1 / 60;

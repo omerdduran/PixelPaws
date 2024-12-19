@@ -6,7 +6,7 @@ class Cat extends BasePlayer {
           attackCooldownTime: 0.3
       }, 'cat', vec2(2, 1.5));
       this.specialAbilityCooldown = 0; // Initialize cooldown
-      this.jumpPower = 5; // Set a jump power value
+      this.jumpPower = 0.4; // Set a jump power value
       this.touchingWall = false; // Initialize wall touching state
       
       this.spriteYOffset = 1.8;

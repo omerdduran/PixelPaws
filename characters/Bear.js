@@ -3,6 +3,7 @@ class Bear extends BasePlayer {
         super(pos, new Color(0.6, 0.4, 0.2), {
             maxHealth: 150,
             moveSpeed: 0.15,
+            jumpPower: 0.4,
             attackDamage: 30,
             attackRange: 2,
             attackCooldownTime: 0.7
