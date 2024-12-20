@@ -95,11 +95,14 @@ You can find our personal GitHub profiles below:
 - **Jump Boost**: Increases your jump height.
 - **Speed Boost**: Increases your movement speed.
 
-### Enemies:
+### Characters:
 
 - **Bear**: Strong but slow.
-- **Parrot**: Aerial enemy that attacks from above.
-- **Turtle**: Defensive, can block attacks.
+- **Bunny**: Fast and has double jump ability.
+- **Cat**: Can climb walls.
+- **Dog**: Bark at your enemies to stun them!
+- **Parrot**: Aerial friend that flies to anywhere.
+- **Turtle**: Defensive, can block attacks by hiding in his shell.
 
 ---
 
